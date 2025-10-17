@@ -160,11 +160,11 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create_form_definition`,
         {
           method: 'POST',
-          body: JSON.stringify({
+          body: {
             ...formMetadata,
             form_schema: formSchema,
             version_name: 'v1.0 - Initial Version'
-          })
+          }
         }
       );
 
