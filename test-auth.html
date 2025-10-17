@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Diagnostic Tool</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .success {
+            background: #dcfce7;
+            border: 1px solid #86efac;
+            color: #166534;
+        }
+        .error {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+        }
+        .info {
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+            color: #1e40af;
+        }
+        .test-option {
+            background: #f8fafc;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Authentication Diagnostic Tool</h1>
+        <p class="subtitle">Test your Supabase authentication setup</p>
+
+        <div class="form-group">
+            <label for="testUser">Select Test User:</label>
+            <select id="testUser" onchange="updateCredentials()">
+                <option value="provider@testclinic.com">Provider (provider@testclinic.com)</option>
+                <option value="admin@test-functional-medicine-clinic.com">Admin (admin@test-functional-medicine-clinic.com)</option>
+                <option value="patient@testclinic.com">Patient (patient@testclinic.com)</option>
+                <option value="custom">Custom...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" value="provider@testclinic.com" placeholder="Enter email">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" value="Password123!" placeholder="Enter password">
+        </div>
+
+        <div class="test-option">
+            <strong>Test 1: Direct Supabase Client Auth</strong>
+            <p style="margin: 5px 0; color: #666; font-size: 13px;">Tests authentication using the Supabase JS client directly from browser</p>
+            <button onclick="testDirectAuth()" id="directAuthBtn">Run Direct Auth Test</button>
+        </div>
+
+        <div class="test-option">
+            <strong>Test 2: Edge Function Auth</strong>
+            <p style="margin: 5px 0; color: #666; font-size: 13px;">Tests authentication through your test_auth edge function</p>
+            <button onclick="testEdgeFunctionAuth()" id="edgeFunctionBtn">Run Edge Function Test</button>
+        </div>
+
+        <div class="test-option">
+            <strong>Test 3: Login Edge Function</strong>
+            <p style="margin: 5px 0; color: #666; font-size: 13px;">Tests your actual login edge function</p>
+            <button onclick="testLoginFunction()" id="loginFunctionBtn">Run Login Function Test</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://ulbycxjqmcysexaeznvs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYnljeGpxbWN5c2V4YWV6bnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4NDU4NDgsImV4cCI6MjA3MjQyMTg0OH0.3A-xFl12MT_ms89KdUhwk6doRV2lc7VS2yqEEuUhoPg';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function updateCredentials() {
+            const select = document.getElementById('testUser');
+            const emailInput = document.getElementById('email');
+
+            if (select.value !== 'custom') {
+                emailInput.value = select.value;
+                emailInput.disabled = true;
+            } else {
+                emailInput.disabled = false;
+                emailInput.value = '';
+            }
+        }
+
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = message;
+        }
+
+        async function testDirectAuth() {
+            const btn = document.getElementById('directAuthBtn');
+            btn.disabled = true;
+            btn.textContent = 'Testing...';
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            showResult('Testing direct Supabase client authentication...', 'info');
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) {
+                    showResult(`❌ Direct Auth FAILED\n\nError: ${error.message}\nStatus: ${error.status}\nName: ${error.name}\n\nThis indicates the issue is with Supabase auth configuration or credentials.`, 'error');
+                } else {
+                    showResult(`✅ Direct Auth SUCCESSFUL\n\nUser ID: ${data.user.id}\nEmail: ${data.user.email}\nEmail Confirmed: ${data.user.email_confirmed_at}\nAccess Token: ${data.session.access_token.substring(0, 30)}...\n\nAuthentication is working! The issue may be in your frontend code.`, 'success');
+
+                    // Auto sign out to allow retesting
+                    setTimeout(() => supabase.auth.signOut(), 2000);
+                }
+            } catch (err) {
+                showResult(`❌ Unexpected Error\n\n${err.message || err}\n\nThis may indicate a network or configuration issue.`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Run Direct Auth Test';
+            }
+        }
+
+        async function testEdgeFunctionAuth() {
+            const btn = document.getElementById('edgeFunctionBtn');
+            btn.disabled = true;
+            btn.textContent = 'Testing...';
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            showResult('Testing edge function authentication...', 'info');
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/test_auth`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showResult(`✅ Edge Function Auth SUCCESSFUL\n\n${JSON.stringify(result, null, 2)}\n\nEdge function authentication is working correctly!`, 'success');
+                } else {
+                    showResult(`❌ Edge Function Auth FAILED\n\n${JSON.stringify(result, null, 2)}\n\nError Step: ${result.step}`, 'error');
+                }
+            } catch (err) {
+                showResult(`❌ Edge Function Request Failed\n\n${err.message || err}\n\nCould not reach the edge function.`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Run Edge Function Test';
+            }
+        }
+
+        async function testLoginFunction() {
+            const btn = document.getElementById('loginFunctionBtn');
+            btn.disabled = true;
+            btn.textContent = 'Testing...';
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            showResult('Testing login edge function...', 'info');
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.user) {
+                    showResult(`✅ Login Function SUCCESSFUL\n\n${JSON.stringify(result, null, 2)}\n\nYour login edge function is working!`, 'success');
+                } else {
+                    showResult(`❌ Login Function FAILED\n\nStatus: ${response.status}\n${JSON.stringify(result, null, 2)}`, 'error');
+                }
+            } catch (err) {
+                showResult(`❌ Login Function Request Failed\n\n${err.message || err}\n\nCould not reach the login function.`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Run Login Function Test';
+            }
+        }
+
+        // Initialize
+        updateCredentials();
+    </script>
+</body>
+</html>

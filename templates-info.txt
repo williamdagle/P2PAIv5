@@ -1,0 +1,52 @@
+
+The new p2paiv4 project needs the database migrations and edge functions from this project. Let me identify what needs to be transferred:
+The p2paiv4 project is missing the critical migrations and edge functions. Here's what needs to be transferred:
+
+Missing Database Migrations
+The following migrations contain the Clinical Notes and Template functionality:
+
+20251007195510_add_medication_event_type.sql - Adds medication as timeline event type
+20251007204347_add_personal_templates_support.sql - Adds is_personal flag to templates (KEY MIGRATION)
+20251007210906_restrict_template_category_management_to_admins.sql - Admin-only category management (KEY MIGRATION)
+Missing Edge Functions
+Critical functions for Clinical Notes and Templates:
+
+create_clinical_notes
+get_clinical_notes
+update_clinical_notes
+delete_clinical_notes
+create_note_templates
+get_note_templates
+update_note_templates
+delete_note_templates
+create_note_categories
+get_note_categories
+update_note_categories
+delete_note_categories
+Missing Frontend Components
+From the src/components/notes/ directory:
+
+CategorySelector.tsx
+DynamicTemplate.tsx
+EnhancedSOAPTemplate.tsx
+NoteCard.tsx
+ProviderNoteForm.tsx
+QuickNoteForm.tsx
+SOAPTemplate.tsx
+TemplateSelector.tsx
+Also missing:
+
+src/components/TemplateForm.tsx
+src/components/CategoryForm.tsx
+src/pages/ManageTemplates.tsx
+src/pages/CreateProviderNote.tsx
+src/pages/CreateQuickNote.tsx
+src/pages/ClinicalNotes.tsx
+Solution
+You need to:
+
+Copy the 3 latest migrations from this project to p2paiv4 and run them in order
+Deploy all note-related edge functions (12 functions total)
+Copy all frontend components from src/components/notes/, the note-related pages, and the form components
+Update navigation in p2paiv4 to include Clinical Notes and Manage Templates menu items
+Would you like me to create a migration package or provide the exact SQL and files to copy over to p2paiv4?

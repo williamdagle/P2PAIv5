@@ -1,0 +1,56 @@
+Patient Charting – Functional Medicine Style
+Core Charting Components (General EMR)
+These are essential for all EMRs, and will also apply to Functional Medicine:
+1.	Chief Complaint
+2.	History of Present Illness (HPI)
+3.	Review of Systems (ROS)
+4.	Physical Exam
+5.	Past Medical History
+6.	Family History
+7.	Social History
+8.	Allergies
+9.	Medications
+10.	Immunizations
+11.	Vital Signs
+12.	Assessment & Plan
+13.	Lab/Imaging Orders
+14.	Progress Notes
+15.	SOAP or APSO Notes
+
+Functional Medicine-Specific Additions
+These extend the conventional components to fit functional medicine philosophy, focusing on root cause analysis, systems biology, and personalized care:
+1. Functional Medicine Timeline
+•	Purpose: Life story visualized chronologically to identify root causes and triggers.
+•	Features:
+o	Life events (trauma, illness, exposures, stress)
+o	Environmental & genetic influences
+o	Onset of symptoms
+2. Matrix Model (IFM Matrix)
+•	Purpose: Organizes clinical data by functional systems.
+•	Systems:
+o	Assimilation (digestion, absorption, microbiome)
+o	Defense & Repair (immune)
+o	Energy (mitochondrial, thyroid, adrenal)
+o	Biotransformation & Elimination (detox pathways)
+o	Transport (cardiovascular, lymph)
+o	Communication (hormonal, neurotransmitter)
+o	Structural Integrity (musculoskeletal, cellular)
+UI Suggestion: Consider a graphical chart or modular layout per system.
+3. Lifestyle and Modifiable Factors
+•	Components:
+o	Sleep & relaxation
+o	Exercise & movement
+o	Nutrition & hydration
+o	Stress & resilience
+o	Relationships & community
+o	Environment (toxins, EMF, mold, etc.)
+•	Track as interventions and progress notes.
+4. Nutrition & Supplements Tracker
+•	Prescribed or recommended dietary protocols
+•	Supplements (type, dose, duration, brand)
+•	Food sensitivities, allergies, elimination protocols
+5. Health Goals & Patient Priorities
+•	Patient-defined outcomes
+•	Personalized wellness plans
+•	SMART goals (Specific, Measurable, Achievable, Relevant, Time-bound)
+

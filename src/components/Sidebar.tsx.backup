@@ -1,0 +1,139 @@
+import React from 'react';
+import { Users, Calendar, Activity, FlaskConical, Pill, Cable as Capsule, Settings, Home, UserCheck, CalendarDays, FileText, Plus, Wrench, ClipboardCheck, CheckSquare, Stethoscope, HeartPulse, ClipboardList, TestTube, Shield, FileDown, FolderOpen } from 'lucide-react';
+import { useGlobal } from '../context/GlobalContext';
+import { supabase } from '../lib/supabase';
+import { auditLogger } from '../utils/auditLogger';
+
+interface SidebarProps {
+  currentPage?: string;
+  onPageChange?: (page: string) => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
+  const { globals, clearGlobals } = useGlobal();
+
+  const handleSignOut = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      // End session in audit system
+      await auditLogger.endSession('user_initiated');
+
+      if (session && globals.access_token) {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log_authentication_event`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            email: session.user.email,
+            auth_user_id: session.user.id,
+            event_type: 'logout',
+            user_agent: navigator.userAgent
+          })
+        }).catch(err => console.warn('Failed to log logout event:', err));
+
+        if (response && !response.ok) {
+          const errorData = await response.json();
+          console.warn('Logout event logging failed:', errorData);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to log logout:', error);
+    }
+
+    auditLogger.clearCredentials();
+    await supabase.auth.signOut();
+    clearGlobals();
+    onPageChange?.('Login');
+  };
+
+  const menuItems = [
+    { name: 'Dashboard', icon: Home, page: 'Dashboard' },
+    { name: 'Patients', icon: Users, page: 'Patients' },
+    { name: 'Patient Chart', icon: Stethoscope, page: 'PatientChart', disabled: !globals.selected_patient_id },
+    { name: 'Functional Medicine', icon: HeartPulse, page: 'FunctionalMedicine', disabled: !globals.selected_patient_id },
+    { name: 'Tasks', icon: CheckSquare, page: 'Tasks' },
+    { name: 'Provider Calendar', icon: CalendarDays, page: 'ProviderCalendar' },
+    { name: 'Appointments', icon: Calendar, page: 'Appointments', disabled: !globals.selected_patient_id },
+    { name: 'Clinical Assessments', icon: ClipboardList, page: 'ClinicalAssessments' },
+    { name: 'Lab Orders', icon: TestTube, page: 'LabOrders' },
+    { name: 'Treatment Plans', icon: Activity, page: 'TreatmentPlans', disabled: !globals.selected_patient_id },
+    { name: 'Clinical Notes', icon: FileText, page: 'ClinicalNotes', disabled: !globals.selected_patient_id },
+    { name: 'Labs', icon: FlaskConical, page: 'Labs', disabled: !globals.selected_patient_id },
+    { name: 'Supplements', icon: Capsule, page: 'Supplements', disabled: !globals.selected_patient_id },
+    { name: 'Admin', icon: Settings, page: 'Admin' },
+    { name: 'Compliance Reporting', icon: ClipboardCheck, page: 'ComplianceReporting' },
+    { name: 'Manage Templates', icon: Wrench, page: 'ManageTemplates' },
+    { name: 'Document Management', icon: FolderOpen, page: 'DocumentManagement' },
+    { name: 'Patient Portal', icon: Shield, page: 'PatientPortal' },
+    { name: 'Chart Export', icon: FileDown, page: 'ChartExport' },
+    { name: 'User Migration', icon: UserCheck, page: 'UserMigration' },
+  ];
+
+
+ 
+  
+return (
+  <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col">
+    <div className="p-6 border-b border-gray-200 flex items-center space-x-2 flex-shrink-0">
+      <img src="/p2plogov3.png" alt="Logo" className="h-8 w-auto" />
+      <h1 className="text-2xl font-bold text-gray-900"></h1>
+    </div>
+
+      <nav className="mt-6 flex-1 overflow-y-auto">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = currentPage === item.page;
+          const isDisabled = item.disabled;
+          
+          return (
+            <button
+              key={item.name}
+              onClick={() => !isDisabled && onPageChange?.(item.page)}
+              disabled={isDisabled}
+              className={`
+                w-full flex items-center px-6 py-3 text-left transition-colors
+                ${isActive 
+                  ? 'bg-blue-50 border-r-2 border-blue-500 text-blue-700' 
+                  : isDisabled
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-700 hover:bg-gray-50'
+                }
+              `}
+            >
+              <Icon className="w-5 h-5 mr-3" />
+              <span className="font-medium">{item.name}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {globals.selected_patient_name ? (
+        <div className="p-4 border-t border-gray-200 bg-blue-50 flex-shrink-0">
+          <p className="text-sm font-medium text-blue-900">Selected Patient:</p>
+          <p className="text-sm text-blue-700">{globals.selected_patient_name}</p>
+          <button
+            onClick={handleSignOut}
+            className="mt-2 text-xs text-blue-600 hover:text-blue-800 underline"
+          >
+            Sign Out
+          </button>
+        </div>
+      ) : (
+        <div className="p-4 border-t border-gray-200 flex-shrink-0">
+          <button
+            onClick={handleSignOut}
+            className="w-full text-sm text-gray-600 hover:text-gray-800 underline text-center"
+          >
+            Sign Out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Sidebar;

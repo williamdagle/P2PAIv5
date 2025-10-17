@@ -1,0 +1,70 @@
+import React from 'react';
+import Layout from '../components/Layout';
+import Sidebar from '../components/Sidebar';
+import { TrendingUp, Plus, Users } from 'lucide-react';
+import Button from '../components/Button';
+
+interface AestheticMembershipsProps {
+  onNavigate: (page: string) => void;
+}
+
+const AestheticMemberships: React.FC<AestheticMembershipsProps> = ({ onNavigate }) => {
+  return (
+    <Layout>
+      <Sidebar currentPage="AestheticMemberships" onPageChange={onNavigate} />
+
+      <div>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Patient Memberships
+            </h1>
+            <p className="text-gray-600">Manage recurring membership programs</p>
+          </div>
+          <Button className="flex items-center">
+            <Plus className="w-4 h-4 mr-2" />
+            New Membership
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-gray-600">Active Members</p>
+              <Users className="w-5 h-5 text-blue-600" />
+            </div>
+            <p className="text-2xl font-bold text-gray-900">0</p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-gray-600">Monthly Revenue</p>
+              <TrendingUp className="w-5 h-5 text-green-600" />
+            </div>
+            <p className="text-2xl font-bold text-gray-900">$0</p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-gray-600">Membership Tiers</p>
+              <TrendingUp className="w-5 h-5 text-purple-600" />
+            </div>
+            <p className="text-2xl font-bold text-gray-900">0</p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <TrendingUp className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">No Memberships Yet</h2>
+          <p className="text-gray-600 mb-6">Create membership tiers to offer recurring services</p>
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Membership Tier
+          </Button>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default AestheticMemberships;
