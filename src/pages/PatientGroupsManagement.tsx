@@ -18,7 +18,7 @@ interface PatientGroupsManagementProps {
 const PatientGroupsManagement: React.FC<PatientGroupsManagementProps> = ({ onNavigate }) => {
   const { globals } = useGlobal();
   const { apiCall } = useApi();
-  const { showNotification } = useNotification();
+  const { showSuccess, showError } = useNotification();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -52,25 +52,33 @@ const PatientGroupsManagement: React.FC<PatientGroupsManagementProps> = ({ onNav
 
   const fetchResources = async () => {
     try {
-      const response = await apiCall<Resource[]>(
+      const response = await apiCall<any>(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get_resources`,
         { method: 'GET' }
       );
-      setResources(response || []);
+      console.log('[PatientGroupsManagement] Resources response:', response);
+      // Handle both array response and object with resources property
+      const resourcesData = Array.isArray(response) ? response : (response?.resources || []);
+      setResources(resourcesData);
     } catch (error) {
       console.error('Failed to fetch resources:', error);
+      setResources([]);
     }
   };
 
   const fetchProviders = async () => {
     try {
-      const response = await apiCall<User[]>(
+      const response = await apiCall<any>(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get_users`,
         { method: 'GET' }
       );
-      setProviders(response || []);
+      console.log('[PatientGroupsManagement] Providers response:', response);
+      // Handle both array response and object with users property
+      const usersData = Array.isArray(response) ? response : (response?.users || []);
+      setProviders(usersData);
     } catch (error) {
       console.error('Failed to fetch providers:', error);
+      setProviders([]);
     }
   };
 
@@ -88,12 +96,12 @@ const PatientGroupsManagement: React.FC<PatientGroupsManagementProps> = ({ onNav
         }
       );
 
-      showNotification('Patient group created successfully', 'success');
+      showSuccess('Patient group created successfully');
       setIsCreateModalOpen(false);
       resetForm();
       setRefreshKey(prev => prev + 1);
     } catch (error: any) {
-      showNotification(error.message || 'Failed to create group', 'error');
+      showError('Failed to create group', error.message);
     }
   };
 
@@ -112,13 +120,13 @@ const PatientGroupsManagement: React.FC<PatientGroupsManagementProps> = ({ onNav
         }
       );
 
-      showNotification('Patient group updated successfully', 'success');
+      showSuccess('Patient group updated successfully');
       setIsEditModalOpen(false);
       setSelectedGroup(null);
       resetForm();
       setRefreshKey(prev => prev + 1);
     } catch (error: any) {
-      showNotification(error.message || 'Failed to update group', 'error');
+      showError('Failed to update group', error.message);
     }
   };
 
@@ -131,10 +139,10 @@ const PatientGroupsManagement: React.FC<PatientGroupsManagementProps> = ({ onNav
         { method: 'DELETE' }
       );
 
-      showNotification('Patient group deleted successfully', 'success');
+      showSuccess('Patient group deleted successfully');
       setRefreshKey(prev => prev + 1);
     } catch (error: any) {
-      showNotification(error.message || 'Failed to delete group', 'error');
+      showError('Failed to delete group', error.message);
     }
   };
 
