@@ -34,6 +34,9 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
   const [formFields, setFormFields] = useState<FormFieldType[]>([]);
   const [draggedFieldIndex, setDraggedFieldIndex] = useState<number | null>(null);
   const [expandedFields, setExpandedFields] = useState<Record<string, boolean>>({});
+  const [previewForm, setPreviewForm] = useState<FormDefinition | null>(null);
+  const [deleteConfirmForm, setDeleteConfirmForm] = useState<FormDefinition | null>(null);
+  const [isLoadingAction, setIsLoadingAction] = useState(false);
 
   const fieldTypes = [
     { value: 'text', label: 'Text Input' },
@@ -183,6 +186,122 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
 
   const toggleFieldExpansion = (fieldId: string) => {
     setExpandedFields(prev => ({ ...prev, [fieldId]: !prev[fieldId] }));
+  };
+
+  const handlePreviewForm = (form: FormDefinition) => {
+    setPreviewForm(form);
+  };
+
+  const handleEditForm = async (form: FormDefinition) => {
+    try {
+      setIsLoadingAction(true);
+
+      const response = await apiCall<any>(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get_form_definitions?id=${form.id}`,
+        { method: 'GET' }
+      );
+
+      const formData = Array.isArray(response) ? response[0] : response;
+
+      if (!formData) {
+        showError('Could not load form data');
+        return;
+      }
+
+      setFormMetadata({
+        form_name: formData.form_name || '',
+        form_code: formData.form_code || '',
+        category: formData.category || 'intake',
+        description: formData.description || ''
+      });
+
+      const schema = formData.form_schema || formData.current_version?.form_schema;
+      if (schema && schema.fields) {
+        setFormFields(schema.fields);
+        const expanded: Record<string, boolean> = {};
+        schema.fields.forEach((field: FormFieldType) => {
+          expanded[field.field_id] = false;
+        });
+        setExpandedFields(expanded);
+      } else {
+        setFormFields([]);
+      }
+
+      setSelectedForm(formData);
+      setIsDesigning(true);
+    } catch (error: any) {
+      console.error('Error loading form:', error);
+      showError(error.message || 'Failed to load form');
+    } finally {
+      setIsLoadingAction(false);
+    }
+  };
+
+  const handleDeleteForm = async () => {
+    if (!deleteConfirmForm) return;
+
+    try {
+      setIsLoadingAction(true);
+
+      await apiCall(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete_form_definition?id=${deleteConfirmForm.id}`,
+        { method: 'DELETE' }
+      );
+
+      showSuccess('Form deleted successfully');
+      setDeleteConfirmForm(null);
+      fetchForms();
+    } catch (error: any) {
+      console.error('Error deleting form:', error);
+      showError(error.message || 'Failed to delete form');
+    } finally {
+      setIsLoadingAction(false);
+    }
+  };
+
+  const handleUpdateForm = async () => {
+    if (!selectedForm || !formMetadata.form_name || !formMetadata.form_code) {
+      showError('Please provide form name and code');
+      return;
+    }
+
+    if (formFields.length === 0) {
+      showError('Please add at least one field to the form');
+      return;
+    }
+
+    try {
+      const formSchema = {
+        fields: formFields,
+        metadata: {
+          title: formMetadata.form_name,
+          description: formMetadata.description
+        }
+      };
+
+      await apiCall(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update_form_definition`,
+        {
+          method: 'PUT',
+          body: {
+            id: selectedForm.id,
+            ...formMetadata,
+            form_schema: formSchema
+          }
+        }
+      );
+
+      showSuccess('Form updated successfully');
+      setIsDesigning(false);
+      setSelectedForm(null);
+      setFormMetadata({ form_name: '', form_code: '', category: 'intake', description: '' });
+      setFormFields([]);
+      setExpandedFields({});
+      fetchForms();
+    } catch (error: any) {
+      console.error('Error updating form:', error);
+      showError(error.message || 'Failed to update form');
+    }
   };
 
   const renderFieldEditor = (field: FormFieldType, index: number) => {
@@ -492,6 +611,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
           variant="secondary"
           onClick={() => {
             setIsDesigning(false);
+            setSelectedForm(null);
             setFormMetadata({ form_name: '', form_code: '', category: 'intake', description: '' });
             setFormFields([]);
             setExpandedFields({});
@@ -499,8 +619,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
         >
           Cancel
         </Button>
-        <Button onClick={handleSaveForm}>
-          Save Form
+        <Button onClick={selectedForm ? handleUpdateForm : handleSaveForm}>
+          {selectedForm ? 'Update Form' : 'Save Form'}
         </Button>
       </div>
     </div>
@@ -548,13 +668,28 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <button className="text-blue-600 hover:text-blue-800 p-2" title="Preview Form">
+                  <button
+                    onClick={() => handlePreviewForm(form)}
+                    className="text-blue-600 hover:text-blue-800 p-2 transition-colors"
+                    title="Preview Form"
+                    disabled={isLoadingAction}
+                  >
                     <Eye className="w-5 h-5" />
                   </button>
-                  <button className="text-gray-600 hover:text-gray-800 p-2" title="Edit Form">
+                  <button
+                    onClick={() => handleEditForm(form)}
+                    className="text-gray-600 hover:text-gray-800 p-2 transition-colors"
+                    title="Edit Form"
+                    disabled={isLoadingAction}
+                  >
                     <Edit className="w-5 h-5" />
                   </button>
-                  <button className="text-red-600 hover:text-red-800 p-2" title="Delete Form">
+                  <button
+                    onClick={() => setDeleteConfirmForm(form)}
+                    className="text-red-600 hover:text-red-800 p-2 transition-colors"
+                    title="Delete Form"
+                    disabled={isLoadingAction}
+                  >
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
@@ -565,6 +700,162 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
       </div>
     </div>
   );
+
+  const renderPreviewModal = () => {
+    if (!previewForm) return null;
+
+    let formSchema: any = null;
+    try {
+      formSchema = previewForm.form_schema || (previewForm as any).current_version?.form_schema;
+    } catch (e) {
+      console.error('Error parsing form schema:', e);
+    }
+
+    const fields = formSchema?.fields || [];
+
+    return (
+      <Modal
+        isOpen={true}
+        onClose={() => setPreviewForm(null)}
+        title="Form Preview"
+      >
+        <div className="space-y-6">
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{previewForm.form_name}</h3>
+            {previewForm.description && (
+              <p className="text-sm text-gray-600 mb-3">{previewForm.description}</p>
+            )}
+            <div className="flex items-center space-x-4 text-xs text-gray-500">
+              <span className="px-2 py-1 bg-white rounded border">{previewForm.category}</span>
+              <span>Code: {previewForm.form_code}</span>
+              <span className={previewForm.is_published ? 'text-green-600' : 'text-yellow-600'}>
+                {previewForm.is_published ? 'Published' : 'Draft'}
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            <h4 className="font-medium text-gray-900">Form Fields:</h4>
+            {fields.length === 0 ? (
+              <p className="text-gray-500 text-sm">No fields defined in this form.</p>
+            ) : (
+              fields.map((field: FormFieldType, index: number) => (
+                <div key={field.field_id || index} className="bg-white border border-gray-300 rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        {field.field_label}
+                        {field.required && <span className="text-red-500 ml-1">*</span>}
+                      </label>
+                      {field.help_text && (
+                        <p className="text-xs text-gray-500 mt-1">{field.help_text}</p>
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                      {field.field_type}
+                    </span>
+                  </div>
+
+                  {field.field_type === 'text' && (
+                    <input
+                      type="text"
+                      placeholder={field.placeholder || ''}
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                    />
+                  )}
+                  {field.field_type === 'textarea' && (
+                    <textarea
+                      placeholder={field.placeholder || ''}
+                      disabled
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                    />
+                  )}
+                  {field.field_type === 'dropdown' && (
+                    <select disabled className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
+                      <option>Select an option...</option>
+                      {field.options?.map((opt, i) => (
+                        <option key={i} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  )}
+                  {field.field_type === 'checkbox' && (
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" disabled className="rounded" />
+                      <span className="text-sm text-gray-600">Checkbox option</span>
+                    </div>
+                  )}
+                  {field.field_type === 'radio' && (
+                    <div className="space-y-2">
+                      {field.options?.map((opt, i) => (
+                        <div key={i} className="flex items-center space-x-2">
+                          <input type="radio" name={field.field_name} disabled className="rounded-full" />
+                          <span className="text-sm text-gray-600">{opt.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {(field.field_type === 'date' || field.field_type === 'email' || field.field_type === 'phone' || field.field_type === 'number') && (
+                    <input
+                      type={field.field_type}
+                      placeholder={field.placeholder || ''}
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                    />
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="flex justify-end pt-4 border-t">
+            <Button onClick={() => setPreviewForm(null)}>
+              Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    );
+  };
+
+  const renderDeleteConfirmModal = () => {
+    if (!deleteConfirmForm) return null;
+
+    return (
+      <Modal
+        isOpen={true}
+        onClose={() => setDeleteConfirmForm(null)}
+        title="Confirm Deletion"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">
+            Are you sure you want to delete the form <strong>"{deleteConfirmForm.form_name}"</strong>?
+          </p>
+          <p className="text-sm text-gray-600">
+            This action cannot be undone. If this form has active assignments, it cannot be deleted.
+          </p>
+
+          <div className="flex justify-end space-x-3 pt-4 border-t">
+            <Button
+              variant="secondary"
+              onClick={() => setDeleteConfirmForm(null)}
+              disabled={isLoadingAction}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteForm}
+              disabled={isLoadingAction}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isLoadingAction ? 'Deleting...' : 'Delete Form'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    );
+  };
 
   return (
     <Layout>
@@ -580,6 +871,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
         </div>
 
         {isDesigning ? renderFormDesigner() : renderFormsList()}
+        {renderPreviewModal()}
+        {renderDeleteConfirmModal()}
       </div>
     </Layout>
   );
