@@ -113,10 +113,23 @@ const ClinicSettings: React.FC<ClinicSettingsProps> = ({ onNavigate }) => {
   const handleSave = async () => {
     if (!clinic) return;
 
+    console.log('[ClinicSettings] handleSave started');
+    console.log('[ClinicSettings] Clinic data:', {
+      id: clinic.id,
+      name: clinic.name,
+      clinic_settings: clinic.clinic_settings,
+      feature_flags: clinic.feature_flags
+    });
+
     setSaving(true);
+    const startTime = Date.now();
+
     try {
-      await apiCall(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update_clinics`,
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update_clinics`;
+      console.log('[ClinicSettings] Making API call to:', url);
+
+      const response = await apiCall(
+        url,
         {
           method: 'PUT',
           body: {
@@ -126,16 +139,27 @@ const ClinicSettings: React.FC<ClinicSettingsProps> = ({ onNavigate }) => {
           }
         }
       );
+
+      const elapsed = Date.now() - startTime;
+      console.log('[ClinicSettings] API call succeeded in', elapsed, 'ms');
+      console.log('[ClinicSettings] Response:', response);
+
       showSuccess('Clinic settings updated successfully');
+      console.log('[ClinicSettings] Success notification shown');
 
       // Update global state to reflect aesthetics module changes
       if (clinic.feature_flags?.aesthetics !== undefined) {
         setGlobal('aesthetics_module_enabled', clinic.feature_flags.aesthetics);
+        console.log('[ClinicSettings] Updated aesthetics_module_enabled to:', clinic.feature_flags.aesthetics);
       }
-    } catch (err) {
-      showError('Failed to save clinic settings');
+    } catch (err: any) {
+      const elapsed = Date.now() - startTime;
+      console.error('[ClinicSettings] API call failed after', elapsed, 'ms');
+      console.error('[ClinicSettings] Error:', err);
+      showError('Failed to save clinic settings', err?.message || 'Unknown error');
     } finally {
       setSaving(false);
+      console.log('[ClinicSettings] handleSave completed');
     }
   };
 

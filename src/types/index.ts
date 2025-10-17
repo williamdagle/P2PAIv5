@@ -1,3 +1,11 @@
+export interface NotificationData {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  title: string;
+  message?: string;
+  duration?: number;
+}
+
 export interface GlobalState {
   access_token: string;
   user_id: string;
@@ -6,6 +14,7 @@ export interface GlobalState {
   selected_patient_name: string;
   pending_appointment_edit?: Appointment;
   aesthetics_module_enabled?: boolean;
+  notifications: NotificationData[];
 }
 
 export interface Patient {

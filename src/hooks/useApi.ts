@@ -13,9 +13,17 @@ export function useApi() {
     url: string,
     options: RequestInit & { body?: any } = {}
   ): Promise<T> => {
+    console.log('[useApi] API call initiated:', {
+      url,
+      method: options.method || 'GET',
+      hasBody: !!options.body,
+      bodyPreview: options.body ? JSON.stringify(options.body).substring(0, 200) : 'none'
+    });
+
     setLoading(true);
     setError(null);
-    
+    const requestStartTime = Date.now();
+
     try {
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
@@ -34,12 +42,17 @@ export function useApi() {
         headers['Authorization'] = `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`;
       }
       
+      console.log('[useApi] Sending request with headers:', Object.keys(headers));
+
       const response = await fetch(url, {
         ...options,
         headers,
         body: options.body ? JSON.stringify(options.body) : undefined,
       });
-      
+
+      const fetchTime = Date.now() - requestStartTime;
+      console.log('[useApi] Fetch completed in', fetchTime, 'ms with status:', response.status);
+
       if (response.status === 401) {
         // Don't auto-logout for migration endpoints
         if (!url.includes('/migrate_users') && !url.includes('/reset_user_password')) {
@@ -55,10 +68,19 @@ export function useApi() {
       
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('[useApi] Request failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText
+        });
         throw new Error(errorText || `HTTP ${response.status}`);
       }
 
       const jsonResponse = await response.json();
+      const totalTime = Date.now() - requestStartTime;
+
+      console.log('[useApi] Request successful in', totalTime, 'ms');
+      console.log('[useApi] Response data:', jsonResponse);
 
       // Log audit event for data operations (non-blocking)
       logAuditForOperation(url, options.method || 'GET', jsonResponse).catch(err => {
@@ -68,10 +90,13 @@ export function useApi() {
       return jsonResponse as T;
       
     } catch (err: any) {
+      const totalTime = Date.now() - requestStartTime;
+      console.error('[useApi] Request failed after', totalTime, 'ms:', err);
       setError(err.message);
       throw err;
     } finally {
       setLoading(false);
+      console.log('[useApi] Request completed, loading state cleared');
     }
   };
 

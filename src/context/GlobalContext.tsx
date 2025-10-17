@@ -1,10 +1,12 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { GlobalState } from '../types';
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import { GlobalState, NotificationData } from '../types';
 
 interface GlobalContextType {
   globals: GlobalState;
   setGlobal: <K extends keyof GlobalState>(key: K, value: GlobalState[K]) => void;
   clearGlobals: () => void;
+  addNotification: (notification: Omit<NotificationData, 'id'>) => void;
+  removeNotification: (id: string) => void;
 }
 
 const initialGlobals: GlobalState = {
@@ -13,7 +15,8 @@ const initialGlobals: GlobalState = {
   clinic_id: '',
   selected_patient_id: '',
   selected_patient_name: '',
-  pending_appointment_edit: undefined
+  pending_appointment_edit: undefined,
+  notifications: []
 };
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -31,8 +34,26 @@ export const GlobalProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     localStorage.removeItem('supabase.auth.token');
   };
 
+  const addNotification = useCallback((notification: Omit<NotificationData, 'id'>) => {
+    const id = Math.random().toString(36).substr(2, 9);
+    const newNotification = { ...notification, id };
+    console.log('[GlobalContext] Adding notification:', newNotification);
+    setGlobals(prev => ({
+      ...prev,
+      notifications: [...prev.notifications, newNotification]
+    }));
+  }, []);
+
+  const removeNotification = useCallback((id: string) => {
+    console.log('[GlobalContext] Removing notification:', id);
+    setGlobals(prev => ({
+      ...prev,
+      notifications: prev.notifications.filter(n => n.id !== id)
+    }));
+  }, []);
+
   return (
-    <GlobalContext.Provider value={{ globals, setGlobal, clearGlobals }}>
+    <GlobalContext.Provider value={{ globals, setGlobal, clearGlobals, addNotification, removeNotification }}>
       {children}
     </GlobalContext.Provider>
   );
