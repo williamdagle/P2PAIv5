@@ -22,7 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
     'aesthetics-business': true,
   });
   const navRef = useRef<HTMLDivElement>(null);
-  const scrollPositionRef = useRef<number>(0);
+  const scrollPåositionRef = useRef<number>(0);
 
   const handleSignOut = async () => {
     try {
