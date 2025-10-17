@@ -53,7 +53,6 @@ Deno.serve(async (req) => {
         creator:users!created_by(full_name)
       `)
       .eq('clinic_id', userProfile.clinic_id)
-      .eq('is_active', true)
       .order('state_name', { ascending: true });
 
     if (state_code) {

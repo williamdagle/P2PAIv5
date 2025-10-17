@@ -17,7 +17,7 @@ interface StateConfigurationProps {
 const StateConfiguration: React.FC<StateConfigurationProps> = ({ onNavigate }) => {
   const { globals } = useGlobal();
   const { apiCall } = useApi();
-  const { showNotification } = useNotification();
+  const { showSuccess, showError } = useNotification();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -62,12 +62,12 @@ const StateConfiguration: React.FC<StateConfigurationProps> = ({ onNavigate }) =
         }
       );
 
-      showNotification('State configuration created successfully', 'success');
+      showSuccess('State configuration created successfully');
       setIsCreateModalOpen(false);
       resetForm();
       setRefreshKey(prev => prev + 1);
     } catch (error: any) {
-      showNotification(error.message || 'Failed to create configuration', 'error');
+      showError('Failed to create configuration', error.message);
     }
   };
 
@@ -86,13 +86,13 @@ const StateConfiguration: React.FC<StateConfigurationProps> = ({ onNavigate }) =
         }
       );
 
-      showNotification('State configuration updated successfully', 'success');
+      showSuccess('State configuration updated successfully');
       setIsEditModalOpen(false);
       setSelectedConfig(null);
       resetForm();
       setRefreshKey(prev => prev + 1);
     } catch (error: any) {
-      showNotification(error.message || 'Failed to update configuration', 'error');
+      showError('Failed to update configuration', error.message);
     }
   };
 
