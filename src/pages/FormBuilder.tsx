@@ -33,6 +33,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
 
   const [formFields, setFormFields] = useState<FormFieldType[]>([]);
   const [draggedFieldIndex, setDraggedFieldIndex] = useState<number | null>(null);
+  const [expandedFields, setExpandedFields] = useState<Record<string, boolean>>({});
 
   const fieldTypes = [
     { value: 'text', label: 'Text Input' },
@@ -76,6 +77,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
       conditional_logic: {}
     };
     setFormFields([...formFields, newField]);
+    setExpandedFields(prev => ({ ...prev, [newField.field_id]: true }));
   };
 
   const updateField = (index: number, updates: Partial<FormFieldType>) => {
@@ -85,7 +87,13 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
   };
 
   const removeField = (index: number) => {
+    const fieldId = formFields[index].field_id;
     setFormFields(formFields.filter((_, i) => i !== index));
+    setExpandedFields(prev => {
+      const updated = { ...prev };
+      delete updated[fieldId];
+      return updated;
+    });
   };
 
   const duplicateField = (index: number) => {
@@ -96,6 +104,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
       field_name: `${field.field_name}_copy`
     };
     setFormFields([...formFields.slice(0, index + 1), duplicate, ...formFields.slice(index + 1)]);
+    setExpandedFields(prev => ({ ...prev, [duplicate.field_id]: true }));
   };
 
   const moveField = (fromIndex: number, toIndex: number) => {
@@ -157,14 +166,19 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
       setIsDesigning(false);
       setFormMetadata({ form_name: '', form_code: '', category: 'intake', description: '' });
       setFormFields([]);
+      setExpandedFields({});
       fetchForms();
     } catch (error: any) {
       showNotification(error.message || 'Failed to create form', 'error');
     }
   };
 
+  const toggleFieldExpansion = (fieldId: string) => {
+    setExpandedFields(prev => ({ ...prev, [fieldId]: !prev[fieldId] }));
+  };
+
   const renderFieldEditor = (field: FormFieldType, index: number) => {
-    const [isExpanded, setIsExpanded] = useState(true);
+    const isExpanded = expandedFields[field.field_id] ?? true;
 
     return (
       <div
@@ -179,7 +193,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
           <div className="flex items-center space-x-3">
             <GripVertical className="w-5 h-5 text-gray-400 cursor-move" />
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={() => toggleFieldExpansion(field.field_id)}
               className="text-gray-600 hover:text-gray-900"
             >
               {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -211,32 +225,39 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
         {isExpanded && (
           <div className="space-y-3 pl-8">
             <div className="grid grid-cols-2 gap-3">
-              <FormField
-                label="Field Label"
-                name="field_label"
-                value={field.field_label}
-                onChange={(e) => updateField(index, { field_label: e.target.value })}
-              />
+              <FormField label="Field Label">
+                <input
+                  type="text"
+                  name="field_label"
+                  value={field.field_label}
+                  onChange={(e) => updateField(index, { field_label: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </FormField>
 
-              <FormField
-                label="Field Name (Internal)"
-                name="field_name"
-                value={field.field_name}
-                onChange={(e) => updateField(index, { field_name: e.target.value })}
-              />
+              <FormField label="Field Name (Internal)">
+                <input
+                  type="text"
+                  name="field_name"
+                  value={field.field_name}
+                  onChange={(e) => updateField(index, { field_name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </FormField>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <FormField
-                label="Field Type"
-                name="field_type"
-                type="select"
-                value={field.field_type}
-                onChange={(e) => updateField(index, { field_type: e.target.value as any })}
-              >
-                {fieldTypes.map(type => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
+              <FormField label="Field Type">
+                <select
+                  name="field_type"
+                  value={field.field_type}
+                  onChange={(e) => updateField(index, { field_type: e.target.value as any })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {fieldTypes.map(type => (
+                    <option key={type.value} value={type.value}>{type.label}</option>
+                  ))}
+                </select>
               </FormField>
 
               <div className="flex items-center space-x-2 mt-7">
@@ -250,21 +271,25 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            <FormField
-              label="Placeholder Text"
-              name="placeholder"
-              value={field.placeholder || ''}
-              onChange={(e) => updateField(index, { placeholder: e.target.value })}
-            />
+            <FormField label="Placeholder Text">
+              <input
+                type="text"
+                name="placeholder"
+                value={field.placeholder || ''}
+                onChange={(e) => updateField(index, { placeholder: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </FormField>
 
-            <FormField
-              label="Help Text"
-              name="help_text"
-              type="textarea"
-              value={field.help_text || ''}
-              onChange={(e) => updateField(index, { help_text: e.target.value })}
-              rows={2}
-            />
+            <FormField label="Help Text">
+              <textarea
+                name="help_text"
+                value={field.help_text || ''}
+                onChange={(e) => updateField(index, { help_text: e.target.value })}
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </FormField>
 
             {(field.field_type === 'dropdown' || field.field_type === 'radio') && (
               <div>
@@ -305,46 +330,54 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Form Information</h3>
         <div className="grid grid-cols-2 gap-4">
-          <FormField
-            label="Form Name"
-            name="form_name"
-            value={formMetadata.form_name}
-            onChange={(e) => setFormMetadata({ ...formMetadata, form_name: e.target.value })}
-            required
-          />
+          <FormField label="Form Name" required>
+            <input
+              type="text"
+              name="form_name"
+              value={formMetadata.form_name}
+              onChange={(e) => setFormMetadata({ ...formMetadata, form_name: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </FormField>
 
-          <FormField
-            label="Form Code"
-            name="form_code"
-            value={formMetadata.form_code}
-            onChange={(e) => setFormMetadata({ ...formMetadata, form_code: e.target.value })}
-            placeholder="unique_form_code"
-            required
-          />
+          <FormField label="Form Code" required>
+            <input
+              type="text"
+              name="form_code"
+              value={formMetadata.form_code}
+              onChange={(e) => setFormMetadata({ ...formMetadata, form_code: e.target.value })}
+              placeholder="unique_form_code"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </FormField>
 
-          <FormField
-            label="Category"
-            name="category"
-            type="select"
-            value={formMetadata.category}
-            onChange={(e) => setFormMetadata({ ...formMetadata, category: e.target.value })}
-          >
-            <option value="intake">Intake</option>
-            <option value="consent">Consent</option>
-            <option value="assessment">Assessment</option>
-            <option value="survey">Survey</option>
-            <option value="other">Other</option>
+          <FormField label="Category">
+            <select
+              name="category"
+              value={formMetadata.category}
+              onChange={(e) => setFormMetadata({ ...formMetadata, category: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="intake">Intake</option>
+              <option value="consent">Consent</option>
+              <option value="assessment">Assessment</option>
+              <option value="survey">Survey</option>
+              <option value="other">Other</option>
+            </select>
           </FormField>
         </div>
 
-        <FormField
-          label="Description"
-          name="description"
-          type="textarea"
-          value={formMetadata.description}
-          onChange={(e) => setFormMetadata({ ...formMetadata, description: e.target.value })}
-          rows={2}
-        />
+        <FormField label="Description">
+          <textarea
+            name="description"
+            value={formMetadata.description}
+            onChange={(e) => setFormMetadata({ ...formMetadata, description: e.target.value })}
+            rows={2}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </FormField>
       </div>
 
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -378,6 +411,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
             setIsDesigning(false);
             setFormMetadata({ form_name: '', form_code: '', category: 'intake', description: '' });
             setFormFields([]);
+            setExpandedFields({});
           }}
         >
           Cancel
