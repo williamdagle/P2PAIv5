@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
       .from('patient_form_assignments')
       .select(`
         *,
-        patient:patients(id, first_name, last_name, email),
+        patient:patients(id, first_name, last_name),
         form:form_definitions(id, form_name, category),
         version:form_versions(id, version_number, version_name),
         assigner:users!assigned_by(full_name)
