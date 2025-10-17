@@ -6,6 +6,7 @@ import Layout from '../components/Layout';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import FormField from '../components/FormField';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { Building2, Clock, Calendar, DollarSign, ToggleLeft, AlertCircle } from 'lucide-react';
 
 interface ClinicSettingsProps {
@@ -73,6 +74,17 @@ const ClinicSettings: React.FC<ClinicSettingsProps> = ({ onNavigate }) => {
   const [userRole, setUserRole] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'hours' | 'appointments' | 'billing' | 'features'>('hours');
   const [clinic, setClinic] = useState<ClinicData | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    feature: string;
+    currentValue: boolean;
+    pendingValue: boolean;
+  }>({
+    isOpen: false,
+    feature: '',
+    currentValue: false,
+    pendingValue: false
+  });
 
   useEffect(() => {
     loadUserRole();
@@ -101,7 +113,21 @@ const ClinicSettings: React.FC<ClinicSettingsProps> = ({ onNavigate }) => {
         { method: 'GET' }
       );
       if (response && response.length > 0) {
-        setClinic(response[0]);
+        const clinicData = response[0];
+        console.log('[ClinicSettings] Loaded clinic data:', {
+          id: clinicData.id,
+          name: clinicData.name,
+          aesthetics_module_enabled: clinicData.aesthetics_module_enabled,
+          feature_flags: clinicData.feature_flags
+        });
+
+        setClinic(clinicData);
+
+        // Sync global state with loaded data
+        // Prioritize feature_flags.aesthetics, fallback to aesthetics_module_enabled
+        const aestheticsEnabled = clinicData.feature_flags?.aesthetics ?? clinicData.aesthetics_module_enabled ?? false;
+        setGlobal('aesthetics_module_enabled', aestheticsEnabled);
+        console.log('[ClinicSettings] Updated global aesthetics_module_enabled to:', aestheticsEnabled);
       }
     } catch (err) {
       showError('Failed to load clinic settings');
@@ -128,31 +154,38 @@ const ClinicSettings: React.FC<ClinicSettingsProps> = ({ onNavigate }) => {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update_clinics`;
       console.log('[ClinicSettings] Making API call to:', url);
 
-      const response = await apiCall(
+      const response = await apiCall<any>(
         url,
         {
           method: 'PUT',
           body: {
             id: clinic.id,
             clinic_settings: clinic.clinic_settings,
-            feature_flags: clinic.feature_flags,
-            aesthetics_module_enabled: clinic.feature_flags?.aesthetics || false
+            feature_flags: clinic.feature_flags
           }
         }
       );
 
       const elapsed = Date.now() - startTime;
       console.log('[ClinicSettings] API call succeeded in', elapsed, 'ms');
-      console.log('[ClinicSettings] Response:', response);
+      console.log('[ClinicSettings] Response clinic data:', response?.clinic);
 
       showSuccess('Clinic settings updated successfully');
-      console.log('[ClinicSettings] Success notification shown');
 
-      // Update global state to reflect aesthetics module changes
-      if (clinic.feature_flags?.aesthetics !== undefined) {
-        setGlobal('aesthetics_module_enabled', clinic.feature_flags.aesthetics);
-        console.log('[ClinicSettings] Updated aesthetics_module_enabled to:', clinic.feature_flags.aesthetics);
+      // Update local state with the response from the server (includes trigger-synced values)
+      if (response?.clinic) {
+        console.log('[ClinicSettings] Updating local state with server response');
+        setClinic(response.clinic);
+
+        // Update global state with the confirmed saved value
+        const aestheticsEnabled = response.clinic.feature_flags?.aesthetics ?? response.clinic.aesthetics_module_enabled ?? false;
+        setGlobal('aesthetics_module_enabled', aestheticsEnabled);
+        console.log('[ClinicSettings] Updated global aesthetics_module_enabled to:', aestheticsEnabled);
       }
+
+      // Reload to ensure we have the latest data from the database
+      console.log('[ClinicSettings] Reloading clinic settings to confirm persistence');
+      await loadClinicSettings();
     } catch (err: any) {
       const elapsed = Date.now() - startTime;
       console.error('[ClinicSettings] API call failed after', elapsed, 'ms');
@@ -184,6 +217,23 @@ const ClinicSettings: React.FC<ClinicSettingsProps> = ({ onNavigate }) => {
 
   const updateFeatureFlag = (feature: string, value: boolean) => {
     if (!clinic) return;
+
+    // Check if disabling a feature that might have existing data
+    const currentValue = clinic.feature_flags[feature as keyof typeof clinic.feature_flags] || false;
+    const criticalFeatures = ['aesthetics', 'telemedicine', 'functional_medicine'];
+
+    // If disabling a critical feature, show confirmation dialog
+    if (criticalFeatures.includes(feature) && currentValue === true && value === false) {
+      setConfirmDialog({
+        isOpen: true,
+        feature,
+        currentValue,
+        pendingValue: value
+      });
+      return;
+    }
+
+    // Otherwise, update immediately
     setClinic({
       ...clinic,
       feature_flags: {
@@ -191,6 +241,50 @@ const ClinicSettings: React.FC<ClinicSettingsProps> = ({ onNavigate }) => {
         [feature]: value
       }
     });
+  };
+
+  const handleConfirmFeatureToggle = () => {
+    if (!clinic) return;
+
+    setClinic({
+      ...clinic,
+      feature_flags: {
+        ...clinic.feature_flags,
+        [confirmDialog.feature]: confirmDialog.pendingValue
+      }
+    });
+
+    setConfirmDialog({
+      isOpen: false,
+      feature: '',
+      currentValue: false,
+      pendingValue: false
+    });
+  };
+
+  const handleCancelFeatureToggle = () => {
+    setConfirmDialog({
+      isOpen: false,
+      feature: '',
+      currentValue: false,
+      pendingValue: false
+    });
+  };
+
+  const getFeatureName = (featureKey: string): string => {
+    const featureNames: Record<string, string> = {
+      aesthetics: 'Aesthetics',
+      telemedicine: 'Telemedicine',
+      functional_medicine: 'Functional Medicine',
+      patient_portal: 'Patient Portal',
+      lab_integration: 'Lab Integration',
+      e_prescribing: 'E-Prescribing',
+      secure_messaging: 'Secure Messaging',
+      document_management: 'Document Management',
+      billing_module: 'Billing Module',
+      inventory_management: 'Inventory Management'
+    };
+    return featureNames[featureKey] || featureKey;
   };
 
   const updateBusinessHour = (day: string, field: 'open' | 'close' | 'closed', value: string | boolean) => {
@@ -603,6 +697,17 @@ const ClinicSettings: React.FC<ClinicSettingsProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={handleCancelFeatureToggle}
+        onConfirm={handleConfirmFeatureToggle}
+        title="Disable Feature"
+        message={`Are you sure you want to disable ${getFeatureName(confirmDialog.feature)}? This feature may have existing data or active usage. Disabling it will hide related functionality from the interface but will not delete any existing data.`}
+        confirmText="Disable Feature"
+        cancelText="Cancel"
+        type="warning"
+      />
     </Layout>
   );
 };

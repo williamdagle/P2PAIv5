@@ -65,17 +65,23 @@ const AppContent: React.FC = () => {
           try {
             const { data: profile } = await supabase
               .from('users')
-              .select('clinic_id, clinics(aesthetics_module_enabled)')
+              .select('clinic_id, clinics(aesthetics_module_enabled, feature_flags)')
               .eq('auth_user_id', session.user.id)
               .single();
-            
+
             if (profile?.clinic_id) {
               const newSessionId = crypto.randomUUID();
 
               setGlobal('access_token', session.access_token);
               setGlobal('user_id', session.user.id);
               setGlobal('clinic_id', profile.clinic_id);
-              setGlobal('aesthetics_module_enabled', (profile as any).clinics?.aesthetics_module_enabled || false);
+
+              // Sync aesthetics_module_enabled from feature_flags or fallback to column
+              const clinicData = (profile as any).clinics;
+              const aestheticsEnabled = clinicData?.feature_flags?.aesthetics ?? clinicData?.aesthetics_module_enabled ?? false;
+              setGlobal('aesthetics_module_enabled', aestheticsEnabled);
+              console.log('[App.tsx] Session check - aesthetics_module_enabled:', aestheticsEnabled);
+
               setSessionId(newSessionId);
 
               const { data: userProfile } = await supabase

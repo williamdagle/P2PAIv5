@@ -79,7 +79,14 @@ Deno.serve(async (req) => {
 
     console.log('✅ Clinics fetched successfully');
     console.log('📈 Number of clinics returned:', clinics?.length || 0);
-    console.log('🏥 Clinics data preview:', clinics?.slice(0, 2));
+    if (clinics && clinics.length > 0) {
+      console.log('🏥 Clinics data preview (first clinic):', {
+        id: clinics[0].id,
+        name: clinics[0].name,
+        aesthetics_module_enabled: clinics[0].aesthetics_module_enabled,
+        feature_flags: clinics[0].feature_flags
+      });
+    }
 
     return new Response(JSON.stringify(clinics || []), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

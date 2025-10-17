@@ -86,9 +86,21 @@ Deno.serve(async (req) => {
     if (name !== undefined) updateData.name = name;
     if (clinic_type !== undefined) updateData.clinic_type = clinic_type;
     if (clinic_code !== undefined) updateData.clinic_code = clinic_code;
-    if (aesthetics_module_enabled !== undefined) updateData.aesthetics_module_enabled = aesthetics_module_enabled;
     if (clinic_settings !== undefined) updateData.clinic_settings = clinic_settings;
-    if (feature_flags !== undefined) updateData.feature_flags = feature_flags;
+
+    // Handle feature_flags and aesthetics_module_enabled synchronization
+    // The database trigger will keep these in sync, but we prioritize feature_flags
+    if (feature_flags !== undefined) {
+      updateData.feature_flags = feature_flags;
+      console.log(`[update_clinics:${requestId}] Setting feature_flags:`, feature_flags);
+      // The trigger will automatically sync aesthetics_module_enabled from feature_flags.aesthetics
+    } else if (aesthetics_module_enabled !== undefined) {
+      // If only aesthetics_module_enabled is provided, set it
+      // The trigger will sync it to feature_flags.aesthetics
+      updateData.aesthetics_module_enabled = aesthetics_module_enabled;
+      console.log(`[update_clinics:${requestId}] Setting aesthetics_module_enabled:`, aesthetics_module_enabled);
+    }
+
     updateData.updated_at = new Date().toISOString();
 
     console.log(`[update_clinics:${requestId}] Executing database update with data:`, updateData);
@@ -111,7 +123,13 @@ Deno.serve(async (req) => {
     }
 
     const elapsed = Date.now() - startTime;
-    console.log(`[update_clinics:${requestId}] Update successful in ${elapsed}ms. Returning clinic data.`);
+    console.log(`[update_clinics:${requestId}] Update successful in ${elapsed}ms.`);
+    console.log(`[update_clinics:${requestId}] Updated clinic data:`, {
+      id: clinic.id,
+      name: clinic.name,
+      aesthetics_module_enabled: clinic.aesthetics_module_enabled,
+      feature_flags: clinic.feature_flags
+    });
 
     return new Response(
       JSON.stringify({ clinic }),
