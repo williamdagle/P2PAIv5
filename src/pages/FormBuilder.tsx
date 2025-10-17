@@ -150,7 +150,13 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
         }
       };
 
-      await apiCall(
+      console.log('Saving form with data:', {
+        ...formMetadata,
+        form_schema: formSchema,
+        version_name: 'v1.0 - Initial Version'
+      });
+
+      const response = await apiCall(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create_form_definition`,
         {
           method: 'POST',
@@ -162,6 +168,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
         }
       );
 
+      console.log('Form created successfully:', response);
       showNotification('Form created successfully', 'success');
       setIsDesigning(false);
       setFormMetadata({ form_name: '', form_code: '', category: 'intake', description: '' });
@@ -169,6 +176,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
       setExpandedFields({});
       fetchForms();
     } catch (error: any) {
+      console.error('Error saving form:', error);
       showNotification(error.message || 'Failed to create form', 'error');
     }
   };
@@ -313,11 +321,86 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
               </div>
             )}
 
-            <div className="bg-gray-50 p-3 rounded border border-gray-200">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Conditional Logic (Optional)</h4>
-              <p className="text-xs text-gray-500">
-                Show this field only if certain conditions are met. This feature allows for dynamic forms.
-              </p>
+            <div className="bg-gray-50 p-4 rounded border border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-gray-700">Conditional Logic (Optional)</h4>
+                <input
+                  type="checkbox"
+                  checked={field.conditional_logic?.enabled || false}
+                  onChange={(e) => updateField(index, {
+                    conditional_logic: {
+                      ...field.conditional_logic,
+                      enabled: e.target.checked
+                    }
+                  })}
+                  className="rounded"
+                />
+              </div>
+
+              {field.conditional_logic?.enabled ? (
+                <div className="space-y-3">
+                  <p className="text-xs text-gray-600 mb-2">
+                    Show this field only if the following condition is met:
+                  </p>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <select
+                      value={field.conditional_logic?.field_id || ''}
+                      onChange={(e) => updateField(index, {
+                        conditional_logic: {
+                          ...field.conditional_logic,
+                          field_id: e.target.value
+                        }
+                      })}
+                      className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select field...</option>
+                      {formFields
+                        .filter((f, i) => i < index)
+                        .map((f) => (
+                          <option key={f.field_id} value={f.field_id}>
+                            {f.field_label}
+                          </option>
+                        ))}
+                    </select>
+
+                    <select
+                      value={field.conditional_logic?.operator || 'equals'}
+                      onChange={(e) => updateField(index, {
+                        conditional_logic: {
+                          ...field.conditional_logic,
+                          operator: e.target.value
+                        }
+                      })}
+                      className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="equals">equals</option>
+                      <option value="not_equals">not equals</option>
+                      <option value="contains">contains</option>
+                      <option value="is_empty">is empty</option>
+                      <option value="is_not_empty">is not empty</option>
+                    </select>
+
+                    <input
+                      type="text"
+                      value={field.conditional_logic?.value || ''}
+                      onChange={(e) => updateField(index, {
+                        conditional_logic: {
+                          ...field.conditional_logic,
+                          value: e.target.value
+                        }
+                      })}
+                      placeholder="Value"
+                      className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                      disabled={field.conditional_logic?.operator === 'is_empty' || field.conditional_logic?.operator === 'is_not_empty'}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-500">
+                  Enable to show this field only when certain conditions are met.
+                </p>
+              )}
             </div>
           </div>
         )}
