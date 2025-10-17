@@ -151,33 +151,39 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
     });
   }, []);
 
-  // Auto-switch to aesthetics tab if on an aesthetics page and auto-expand section containing current page
+  // Auto-switch to aesthetics tab if on an aesthetics page
   useEffect(() => {
     const aestheticsPages = ['AestheticsDashboard', 'AestheticTreatments', 'AestheticPhotos', 'AestheticPOS', 'AestheticInventory', 'AestheticMemberships', 'AestheticGiftCards'];
     if (currentPage && aestheticsPages.includes(currentPage)) {
       setActiveTab('aesthetics');
     }
+  }, [currentPage]);
 
-    // Auto-expand the section containing the current page
-    if (currentPage) {
-      const allSections = activeTab === 'clinical' ? clinicalSections : aestheticsSections;
+  // Auto-expand the section containing the current page (without causing re-renders)
+  useEffect(() => {
+    if (!currentPage) return;
 
-      for (const [sectionId, section] of Object.entries(allSections)) {
-        const containsCurrentPage = section.items.some((item: any) => item.page === currentPage);
-        if (containsCurrentPage && !expandedSections[sectionId]) {
-          setExpandedSections(prev => {
-            const newState = {
-              ...prev,
-              [sectionId]: true
-            };
-            sessionStorage.setItem('sidebar-expanded-sections', JSON.stringify(newState));
-            return newState;
-          });
-          break;
-        }
+    const allSections = activeTab === 'clinical' ? clinicalSections : aestheticsSections;
+
+    for (const [sectionId, section] of Object.entries(allSections)) {
+      const containsCurrentPage = section.items.some((item: any) => item.page === currentPage);
+      if (containsCurrentPage) {
+        setExpandedSections(prev => {
+          // Only update if this section is not already expanded
+          if (prev[sectionId]) {
+            return prev;
+          }
+          const newState = {
+            ...prev,
+            [sectionId]: true
+          };
+          sessionStorage.setItem('sidebar-expanded-sections', JSON.stringify(newState));
+          return newState;
+        });
+        break;
       }
     }
-  }, [currentPage, activeTab, expandedSections]);
+  }, [currentPage, activeTab]);
 
   // Persist tab selection in sessionStorage
   useEffect(() => {
