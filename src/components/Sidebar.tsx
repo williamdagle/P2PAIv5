@@ -162,6 +162,23 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
     sessionStorage.setItem('sidebar-active-tab', activeTab);
   }, [activeTab]);
 
+  // Persist expanded sections in sessionStorage
+  useEffect(() => {
+    const savedSections = sessionStorage.getItem('sidebar-expanded-sections');
+    if (savedSections) {
+      try {
+        const parsed = JSON.parse(savedSections);
+        setExpandedSections(parsed);
+      } catch {
+        // If parsing fails, use default state
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem('sidebar-expanded-sections', JSON.stringify(expandedSections));
+  }, [expandedSections]);
+
   // Close mobile menu on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
