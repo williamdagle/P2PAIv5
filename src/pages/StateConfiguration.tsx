@@ -121,48 +121,52 @@ const StateConfiguration: React.FC<StateConfigurationProps> = ({ onNavigate }) =
   const renderForm = () => (
     <div className="space-y-4">
       {!selectedConfig && (
-        <FormField
-          label="State"
-          name="state_code"
-          type="select"
-          value={formData.state_code}
-          onChange={(e) => {
-            const selected = stateOptions.find(s => s.code === e.target.value);
-            setFormData({
-              ...formData,
-              state_code: e.target.value,
-              state_name: selected?.name || ''
-            });
-          }}
-          required
-        >
-          <option value="">Select a state</option>
-          {stateOptions.map((state) => (
-            <option key={state.code} value={state.code}>
-              {state.name} ({state.code})
-            </option>
-          ))}
+        <FormField label="State" required>
+          <select
+            name="state_code"
+            value={formData.state_code}
+            onChange={(e) => {
+              const selected = stateOptions.find(s => s.code === e.target.value);
+              setFormData({
+                ...formData,
+                state_code: e.target.value,
+                state_name: selected?.name || ''
+              });
+            }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="">Select a state</option>
+            {stateOptions.map((state) => (
+              <option key={state.code} value={state.code}>
+                {state.name} ({state.code})
+              </option>
+            ))}
+          </select>
         </FormField>
       )}
 
-      <FormField
-        label="Data Retention (days)"
-        name="data_retention_days"
-        type="number"
-        value={formData.data_retention_days}
-        onChange={(e) => setFormData({ ...formData, data_retention_days: parseInt(e.target.value) })}
-        required
-      />
+      <FormField label="Data Retention (days)" required>
+        <input
+          type="number"
+          name="data_retention_days"
+          value={formData.data_retention_days}
+          onChange={(e) => setFormData({ ...formData, data_retention_days: parseInt(e.target.value) })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        />
+      </FormField>
 
-      <FormField
-        label="Compliance Notes"
-        name="compliance_notes"
-        type="textarea"
-        value={formData.compliance_notes}
-        onChange={(e) => setFormData({ ...formData, compliance_notes: e.target.value })}
-        rows={4}
-        placeholder="Enter any state-specific compliance requirements or notes..."
-      />
+      <FormField label="Compliance Notes">
+        <textarea
+          name="compliance_notes"
+          value={formData.compliance_notes}
+          onChange={(e) => setFormData({ ...formData, compliance_notes: e.target.value })}
+          rows={4}
+          placeholder="Enter any state-specific compliance requirements or notes..."
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </FormField>
 
       <label className="flex items-center space-x-2">
         <input
