@@ -135,7 +135,8 @@ const ClinicSettings: React.FC<ClinicSettingsProps> = ({ onNavigate }) => {
           body: {
             id: clinic.id,
             clinic_settings: clinic.clinic_settings,
-            feature_flags: clinic.feature_flags
+            feature_flags: clinic.feature_flags,
+            aesthetics_module_enabled: clinic.feature_flags?.aesthetics || false
           }
         }
       );
