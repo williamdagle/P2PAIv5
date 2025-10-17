@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Calendar, Activity, FlaskConical, Pill, Cable as Capsule, Settings, Home, UserCheck, CalendarDays, FileText, Wrench, ClipboardCheck, CheckSquare, Stethoscope, HeartPulse, ClipboardList, TestTube, Shield, FileDown, FolderOpen, Menu, X, Sparkles, Camera, DollarSign, Package, CreditCard, TrendingUp, ChevronDown, ChevronRight, Building2 } from 'lucide-react';
+import { Users, Calendar, Activity, FlaskConical, Pill, Cable as Capsule, Settings, Home, UserCheck, CalendarDays, FileText, Wrench, ClipboardCheck, CheckSquare, Stethoscope, HeartPulse, ClipboardList, TestTube, Shield, FileDown, FolderOpen, Menu, X, Sparkles, Camera, DollarSign, Package, CreditCard, TrendingUp, ChevronDown, ChevronRight, Building2, UserPlus, FileEdit, MapPin } from 'lucide-react';
 import { useGlobal } from '../context/GlobalContext';
 import { supabase } from '../lib/supabase';
 import { auditLogger } from '../utils/auditLogger';
@@ -16,6 +16,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     'patient-care': true,
     'charting': true,
+    'group-intake': true,
     'administration': false,
     'aesthetics-core': true,
     'aesthetics-business': true,
@@ -78,6 +79,15 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
         { name: 'Labs', icon: FlaskConical, page: 'Labs', disabled: !globals.selected_patient_id },
         { name: 'Medications', icon: Pill, page: 'Medications', disabled: !globals.selected_patient_id },
         { name: 'Supplements', icon: Capsule, page: 'Supplements', disabled: !globals.selected_patient_id },
+      ]
+    },
+    'group-intake': {
+      title: 'Groups & Intake',
+      items: [
+        { name: 'Patient Groups', icon: UserPlus, page: 'PatientGroupsManagement' },
+        { name: 'Form Builder', icon: FileEdit, page: 'FormBuilder' },
+        { name: 'Intake Management', icon: ClipboardList, page: 'IntakeManagement' },
+        { name: 'State Configuration', icon: MapPin, page: 'StateConfiguration' },
       ]
     },
     'administration': {
