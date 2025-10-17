@@ -164,5 +164,21 @@ export function useApi() {
     }
   };
 
-  return { apiCall, loading, error };
+  const apiCallLegacy = async <T>(
+    endpoint: string,
+    method: string = 'GET',
+    body?: any
+  ): Promise<T> => {
+    const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const url = `${baseUrl}/functions/v1/${endpoint}`;
+
+    const options: RequestInit & { body?: any } = {
+      method,
+      body: body || undefined
+    };
+
+    return apiCall<T>(url, options);
+  };
+
+  return { apiCall, apiCallLegacy, loading, error };
 }

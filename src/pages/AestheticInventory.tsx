@@ -19,7 +19,7 @@ interface AestheticInventoryProps {
 const AestheticInventory: React.FC<AestheticInventoryProps> = ({ onNavigate }) => {
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
-  const { apiCall } = useApi();
+  const { apiCallLegacy } = useApi();
   const [loading, setLoading] = useState(false);
   const [inventory, setInventory] = useState<any[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -48,7 +48,7 @@ const AestheticInventory: React.FC<AestheticInventoryProps> = ({ onNavigate }) =
 
   const loadInventory = async () => {
     try {
-      const data = await apiCall('get_aesthetic_inventory', 'POST', {});
+      const data = await apiCallLegacy('get_aesthetic_inventory', 'POST', {});
       setInventory(data || []);
       calculateStats(data || []);
     } catch (error: any) {
@@ -109,7 +109,7 @@ const AestheticInventory: React.FC<AestheticInventoryProps> = ({ onNavigate }) =
     if (!deletingItem) return;
 
     try {
-      await apiCall('delete_aesthetic_inventory', 'POST', { id: deletingItem.id });
+      await apiCallLegacy('delete_aesthetic_inventory', 'POST', { id: deletingItem.id });
       showSuccess('Inventory item deleted successfully');
       setRefreshKey(prev => prev + 1);
     } catch (error: any) {
@@ -144,13 +144,13 @@ const AestheticInventory: React.FC<AestheticInventoryProps> = ({ onNavigate }) =
         performed_by: globals.user_id
       };
 
-      await apiCall('create_inventory_transaction', 'POST', transactionData);
+      await apiCallLegacy('create_inventory_transaction', 'POST', transactionData);
 
       const newStock = adjustmentType === 'add'
         ? adjustingItem.current_stock + quantity
         : adjustingItem.current_stock - quantity;
 
-      await apiCall('update_aesthetic_inventory', 'POST', {
+      await apiCallLegacy('update_aesthetic_inventory', 'POST', {
         id: adjustingItem.id,
         current_stock: Math.max(0, newStock)
       });

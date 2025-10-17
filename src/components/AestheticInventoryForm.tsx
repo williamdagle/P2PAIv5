@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
+import { useApi } from '../hooks/useApi';
 import Button from './Button';
 import FormField from './FormField';
 
@@ -11,15 +12,13 @@ interface AestheticInventoryFormProps {
 }
 
 const PRODUCT_CATEGORIES = [
-  'Neurotoxin',
-  'Dermal Filler',
-  'PRP/PRF',
-  'Threads',
-  'Skincare Retail',
-  'Supplements',
-  'Medical Supplies',
-  'Equipment',
-  'Other'
+  { value: 'toxin', label: 'Neurotoxin' },
+  { value: 'filler', label: 'Dermal Filler' },
+  { value: 'injectable', label: 'Injectable (PRP/PRF)' },
+  { value: 'device_consumable', label: 'Device Consumables (Threads)' },
+  { value: 'skincare', label: 'Skincare' },
+  { value: 'retail', label: 'Retail Products' },
+  { value: 'other', label: 'Other' }
 ];
 
 const AestheticInventoryForm: React.FC<AestheticInventoryFormProps> = ({
@@ -29,7 +28,7 @@ const AestheticInventoryForm: React.FC<AestheticInventoryFormProps> = ({
 }) => {
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
-  const [loading, setLoading] = useState(false);
+  const { apiCallLegacy, loading } = useApi();
 
   const [formData, setFormData] = useState({
     product_name: item?.product_name || '',
@@ -56,7 +55,6 @@ const AestheticInventoryForm: React.FC<AestheticInventoryFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
     try {
       const payload = {
@@ -68,30 +66,15 @@ const AestheticInventoryForm: React.FC<AestheticInventoryFormProps> = ({
         retail_price: formData.retail_price ? parseFloat(formData.retail_price) : null,
       };
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${item ? 'update_aesthetic_inventory' : 'create_aesthetic_inventory'}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${globals.access_token}`,
-            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify(item ? { id: item.id, ...payload } : payload),
-        }
-      );
+      const endpoint = item ? 'update_aesthetic_inventory' : 'create_aesthetic_inventory';
+      const requestBody = item ? { id: item.id, ...payload } : payload;
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to save inventory item');
-      }
+      await apiCallLegacy(endpoint, 'POST', requestBody);
 
       showSuccess(`Inventory item ${item ? 'updated' : 'created'} successfully`);
       onSuccess();
     } catch (error: any) {
       showError(error.message || 'Failed to save inventory item');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -115,8 +98,8 @@ const AestheticInventoryForm: React.FC<AestheticInventoryFormProps> = ({
         >
           <option value="">Select Category</option>
           {PRODUCT_CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
+            <option key={cat.value} value={cat.value}>
+              {cat.label}
             </option>
           ))}
         </FormField>
