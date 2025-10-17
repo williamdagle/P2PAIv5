@@ -89,7 +89,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
       if (data.user && data.session) {
         const { data: profile, error: profileError } = await supabase
           .from('users')
-          .select('clinic_id, full_name, clinics(aesthetics_module_enabled)')
+          .select('clinic_id, full_name, clinics(feature_flags)')
           .eq('auth_user_id', data.user.id)
           .single();
 
@@ -158,10 +158,13 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
           })
         }).catch(err => console.warn('Failed to start session:', err));
 
+        const featureFlags = (profile as any).clinics?.feature_flags || {};
+        const aestheticsEnabled = featureFlags.aesthetics || false;
+
         setGlobal('access_token', data.session.access_token);
         setGlobal('user_id', data.user.id);
         setGlobal('clinic_id', profile.clinic_id);
-        setGlobal('aesthetics_module_enabled', (profile as any).clinics?.aesthetics_module_enabled || false);
+        setGlobal('aesthetics_module_enabled', aestheticsEnabled);
         onNavigate('Dashboard');
       } else {
         setErrors({ submit: 'Login failed. No user session created.' });

@@ -42,9 +42,9 @@ Deno.serve(async (req) => {
       .eq('auth_user_id', user.id)
       .single();
 
-    if (profileError || userProfile.roles?.name !== 'System Admin') {
+    if (profileError || !['System Admin', 'Clinic Admin'].includes(userProfile.roles?.name)) {
       return new Response(
-        JSON.stringify({ error: 'Forbidden: System Admin access required' }),
+        JSON.stringify({ error: 'Forbidden: System Admin or Clinic Admin access required' }),
         {
           status: 403,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { id, name, clinic_type, clinic_code, aesthetics_module_enabled } = body;
+    const { id, name, clinic_type, clinic_code, aesthetics_module_enabled, clinic_settings, feature_flags } = body;
 
     if (!id) {
       return new Response(
@@ -70,6 +70,8 @@ Deno.serve(async (req) => {
     if (clinic_type !== undefined) updateData.clinic_type = clinic_type;
     if (clinic_code !== undefined) updateData.clinic_code = clinic_code;
     if (aesthetics_module_enabled !== undefined) updateData.aesthetics_module_enabled = aesthetics_module_enabled;
+    if (clinic_settings !== undefined) updateData.clinic_settings = clinic_settings;
+    if (feature_flags !== undefined) updateData.feature_flags = feature_flags;
     updateData.updated_at = new Date().toISOString();
 
     const { data: clinic, error: updateError } = await supabaseClient

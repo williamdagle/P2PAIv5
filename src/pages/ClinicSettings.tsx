@@ -65,7 +65,7 @@ const DAY_LABELS: Record<string, string> = {
 };
 
 const ClinicSettings: React.FC<ClinicSettingsProps> = ({ onNavigate }) => {
-  const { globals } = useGlobal();
+  const { globals, setGlobal } = useGlobal();
   const { apiCall } = useApi();
   const { showSuccess, showError } = useNotification();
   const [loading, setLoading] = useState(true);
@@ -127,6 +127,11 @@ const ClinicSettings: React.FC<ClinicSettingsProps> = ({ onNavigate }) => {
         }
       );
       showSuccess('Clinic settings updated successfully');
+
+      // Update global state to reflect aesthetics module changes
+      if (clinic.feature_flags?.aesthetics !== undefined) {
+        setGlobal('aesthetics_module_enabled', clinic.feature_flags.aesthetics);
+      }
     } catch (err) {
       showError('Failed to save clinic settings');
     } finally {
