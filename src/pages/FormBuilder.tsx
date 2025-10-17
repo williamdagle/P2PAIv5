@@ -17,7 +17,7 @@ interface FormBuilderProps {
 const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
   const { globals } = useGlobal();
   const { apiCall } = useApi();
-  const { showNotification } = useNotification();
+  const { showSuccess, showError } = useNotification();
 
   const [forms, setForms] = useState<FormDefinition[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -132,12 +132,12 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
 
   const handleSaveForm = async () => {
     if (!formMetadata.form_name || !formMetadata.form_code) {
-      showNotification('Please provide form name and code', 'error');
+      showError('Please provide form name and code');
       return;
     }
 
     if (formFields.length === 0) {
-      showNotification('Please add at least one field to the form', 'error');
+      showError('Please add at least one field to the form');
       return;
     }
 
@@ -169,7 +169,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
       );
 
       console.log('Form created successfully:', response);
-      showNotification('Form created successfully', 'success');
+      showSuccess('Form created successfully');
       setIsDesigning(false);
       setFormMetadata({ form_name: '', form_code: '', category: 'intake', description: '' });
       setFormFields([]);
@@ -177,7 +177,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
       fetchForms();
     } catch (error: any) {
       console.error('Error saving form:', error);
-      showNotification(error.message || 'Failed to create form', 'error');
+      showError(error.message || 'Failed to create form');
     }
   };
 
