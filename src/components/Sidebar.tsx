@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Users, Calendar, Activity, FlaskConical, Pill, Cable as Capsule, Settings, Home, UserCheck, CalendarDays, FileText, Wrench, ClipboardCheck, CheckSquare, Stethoscope, HeartPulse, ClipboardList, TestTube, Shield, FileDown, FolderOpen, Menu, X, Sparkles, Camera, DollarSign, Package, CreditCard, TrendingUp, ChevronDown, ChevronRight, Building2, UserPlus, FileEdit, MapPin } from 'lucide-react';
 import { useGlobal } from '../context/GlobalContext';
 import { supabase } from '../lib/supabase';
@@ -17,11 +17,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
     'patient-care': true,
     'charting': true,
     'group-intake': true,
-    'administration': false,
+    'administration': true,
     'aesthetics-core': true,
     'aesthetics-business': true,
   });
-  const navRef = React.useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+  const scrollPositionRef = useRef<number>(0);
 
   const handleSignOut = async () => {
     try {
@@ -129,27 +130,54 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
     }
   };
 
-  const handleMenuItemClick = (page: string, isDisabled: boolean) => {
+  const handleMenuItemClick = useCallback((page: string, isDisabled: boolean) => {
     if (!isDisabled) {
+      if (navRef.current) {
+        scrollPositionRef.current = navRef.current.scrollTop;
+      }
       onPageChange?.(page);
       setIsMobileMenuOpen(false);
     }
-  };
+  }, [onPageChange]);
 
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [sectionId]: !prev[sectionId]
-    }));
-  };
+  const toggleSection = useCallback((sectionId: string) => {
+    setExpandedSections(prev => {
+      const newState = {
+        ...prev,
+        [sectionId]: !prev[sectionId]
+      };
+      sessionStorage.setItem('sidebar-expanded-sections', JSON.stringify(newState));
+      return newState;
+    });
+  }, []);
 
-  // Auto-switch to aesthetics tab if on an aesthetics page
+  // Auto-switch to aesthetics tab if on an aesthetics page and auto-expand section containing current page
   useEffect(() => {
     const aestheticsPages = ['AestheticsDashboard', 'AestheticTreatments', 'AestheticPhotos', 'AestheticPOS', 'AestheticInventory', 'AestheticMemberships', 'AestheticGiftCards'];
     if (currentPage && aestheticsPages.includes(currentPage)) {
       setActiveTab('aesthetics');
     }
-  }, [currentPage]);
+
+    // Auto-expand the section containing the current page
+    if (currentPage) {
+      const allSections = activeTab === 'clinical' ? clinicalSections : aestheticsSections;
+
+      for (const [sectionId, section] of Object.entries(allSections)) {
+        const containsCurrentPage = section.items.some((item: any) => item.page === currentPage);
+        if (containsCurrentPage && !expandedSections[sectionId]) {
+          setExpandedSections(prev => {
+            const newState = {
+              ...prev,
+              [sectionId]: true
+            };
+            sessionStorage.setItem('sidebar-expanded-sections', JSON.stringify(newState));
+            return newState;
+          });
+          break;
+        }
+      }
+    }
+  }, [currentPage, activeTab, expandedSections]);
 
   // Persist tab selection in sessionStorage
   useEffect(() => {
@@ -163,7 +191,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
     sessionStorage.setItem('sidebar-active-tab', activeTab);
   }, [activeTab]);
 
-  // Persist expanded sections in sessionStorage
+  // Load expanded sections and scroll position from sessionStorage on mount
   useEffect(() => {
     const savedSections = sessionStorage.getItem('sidebar-expanded-sections');
     if (savedSections) {
@@ -174,11 +202,34 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
         // If parsing fails, use default state
       }
     }
+
+    const savedScrollPosition = sessionStorage.getItem('sidebar-scroll-position');
+    if (savedScrollPosition && navRef.current) {
+      scrollPositionRef.current = parseInt(savedScrollPosition, 10);
+    }
   }, []);
 
+  // Restore scroll position after render
   useEffect(() => {
-    sessionStorage.setItem('sidebar-expanded-sections', JSON.stringify(expandedSections));
-  }, [expandedSections]);
+    if (navRef.current && scrollPositionRef.current > 0) {
+      navRef.current.scrollTop = scrollPositionRef.current;
+    }
+  });
+
+  // Save scroll position to sessionStorage periodically
+  useEffect(() => {
+    const saveScrollPosition = () => {
+      if (navRef.current) {
+        sessionStorage.setItem('sidebar-scroll-position', navRef.current.scrollTop.toString());
+      }
+    };
+
+    const navElement = navRef.current;
+    if (navElement) {
+      navElement.addEventListener('scroll', saveScrollPosition);
+      return () => navElement.removeEventListener('scroll', saveScrollPosition);
+    }
+  }, []);
 
   // Close mobile menu on escape key
   useEffect(() => {
