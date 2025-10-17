@@ -21,6 +21,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
     'aesthetics-core': true,
     'aesthetics-business': true,
   });
+  const navRef = React.useRef<HTMLDivElement>(null);
+  const scrollPositionRef = React.useRef<number>(0);
 
   const handleSignOut = async () => {
     try {
@@ -130,6 +132,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
 
   const handleMenuItemClick = (page: string, isDisabled: boolean) => {
     if (!isDisabled) {
+      if (navRef.current) {
+        scrollPositionRef.current = navRef.current.scrollTop;
+      }
       onPageChange?.(page);
       setIsMobileMenuOpen(false);
     }
@@ -199,6 +204,17 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
       document.body.style.overflow = 'unset';
     }
   }, [isMobileMenuOpen]);
+
+  // Restore scroll position after page change
+  useEffect(() => {
+    if (navRef.current && scrollPositionRef.current > 0) {
+      requestAnimationFrame(() => {
+        if (navRef.current) {
+          navRef.current.scrollTop = scrollPositionRef.current;
+        }
+      });
+    }
+  }, [currentPage]);
 
   const renderMenuItem = (item: any) => {
     const Icon = item.icon;
@@ -335,7 +351,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
         )}
 
         {/* Navigation menu */}
-        <nav className="mt-2 flex-1 overflow-y-auto" role="menu">
+        <nav ref={navRef} className="mt-2 flex-1 overflow-y-auto" role="menu">
           {activeTab === 'clinical' ? (
             <>
               {Object.entries(clinicalSections).map(([id, section]) =>
