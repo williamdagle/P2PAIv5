@@ -42,6 +42,7 @@ import ProviderScheduleManagement from './pages/ProviderScheduleManagement';
 import PatientGroupsManagement from './pages/PatientGroupsManagement';
 import FormBuilder from './pages/FormBuilder';
 import IntakeManagement from './pages/IntakeManagement';
+import StateConfiguration from './pages/StateConfiguration';
 
 const AppContent: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<string>('Login');
@@ -246,6 +247,8 @@ const AppContent: React.FC = () => {
         return <FormBuilder {...pageProps} />;
       case 'IntakeManagement':
         return <IntakeManagement {...pageProps} />;
+      case 'StateConfiguration':
+        return <StateConfiguration {...pageProps} />;
       default:
         return <Login {...pageProps} />;
     }
