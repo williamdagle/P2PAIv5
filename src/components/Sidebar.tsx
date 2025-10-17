@@ -22,7 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
     'aesthetics-business': true,
   });
   const navRef = useRef<HTMLDivElement>(null);
-  const scrollPåositionRef = useRef<number>(0);
+  const scrollPositionRef = useRef<number>(0);
 
   const handleSignOut = async () => {
     try {
@@ -169,10 +169,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
       const containsCurrentPage = section.items.some((item: any) => item.page === currentPage);
       if (containsCurrentPage) {
         setExpandedSections(prev => {
-          // Only update if this section is not already expanded
-          if (prev[sectionId]) {
-            return prev;
-          }
           const newState = {
             ...prev,
             [sectionId]: true
