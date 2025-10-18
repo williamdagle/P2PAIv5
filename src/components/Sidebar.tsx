@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Users, Calendar, Activity, FlaskConical, Pill, Cable as Capsule, Settings, Home, UserCheck, CalendarDays, FileText, Wrench, ClipboardCheck, CheckSquare, Stethoscope, HeartPulse, ClipboardList, TestTube, Shield, FileDown, FolderOpen, Menu, X, Sparkles, Camera, DollarSign, Package, CreditCard, TrendingUp, ChevronDown, ChevronRight, Building2, UserPlus, FileEdit, MapPin } from 'lucide-react';
+import { Users, Calendar, Activity, FlaskConical, Pill, Cable as Capsule, Settings, Home, UserCheck, CalendarDays, FileText, Wrench, ClipboardCheck, CheckSquare, Stethoscope, HeartPulse, ClipboardList, TestTube, Shield, FileDown, FolderOpen, Menu, X, Sparkles, Camera, DollarSign, Package, CreditCard, TrendingUp, ChevronDown, ChevronRight, Building2, UserPlus, File as FileEdit, MapPin } from 'lucide-react';
 import { useGlobal } from '../context/GlobalContext';
 import { supabase } from '../lib/supabase';
 import { auditLogger } from '../utils/auditLogger';
