@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AestheticPhotoUploadForm from '../components/AestheticPhotoUploadForm';
 import { Camera, Plus, X, Calendar, Eye, Download, Trash2, ArrowLeftRight } from 'lucide-react';
 
-interface AestheticPhotosProps {
-  onNavigate: (page: string) => void;
-}
-
-const AestheticPhotos: React.FC<AestheticPhotosProps> = ({ onNavigate }) => {
+const AestheticPhotos: React.FC = () => {
+  const navigate = useNavigate();
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -93,17 +89,17 @@ const AestheticPhotos: React.FC<AestheticPhotosProps> = ({ onNavigate }) => {
 
   if (!globals.selected_patient_id) {
     return (
-      <Layout>
-        <Sidebar currentPage="AestheticPhotos" onPageChange={onNavigate} />
+      
+        
         <div className="text-center py-12">
           <Camera className="w-16 h-16 mx-auto mb-4 text-gray-400" />
           <h2 className="text-2xl font-semibold text-gray-900 mb-2">No Patient Selected</h2>
           <p className="text-gray-600 mb-6">Please select a patient to view photos</p>
-          <Button onClick={() => onNavigate('Patients')}>
+          <Button onClick={() => navigate('/patients')}>
             Select Patient
           </Button>
         </div>
-      </Layout>
+      
     );
   }
 
@@ -114,10 +110,7 @@ const AestheticPhotos: React.FC<AestheticPhotosProps> = ({ onNavigate }) => {
   const photoTypes = ['All', ...Array.from(new Set(photos.map((p) => p.photo_type)))];
 
   return (
-    <Layout>
-      <Sidebar currentPage="AestheticPhotos" onPageChange={onNavigate} />
-
-      <div>
+    <div>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
@@ -312,7 +305,6 @@ const AestheticPhotos: React.FC<AestheticPhotosProps> = ({ onNavigate }) => {
             ))}
           </div>
         )}
-      </div>
 
       <Modal
         isOpen={showUploadModal}
@@ -380,7 +372,8 @@ const AestheticPhotos: React.FC<AestheticPhotosProps> = ({ onNavigate }) => {
           </div>
         )}
       </Modal>
-    </Layout>
+    </div>
+    
   );
 };
 

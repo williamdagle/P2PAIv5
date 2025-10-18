@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useApi } from '../hooks/useApi';
 import { useNotification } from '../hooks/useNotification';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import FormField from '../components/FormField';
 import { FileText, Plus, Edit, Trash2, Copy, Eye, ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
 import type { FormDefinition, FormField as FormFieldType } from '../types';
 
-interface FormBuilderProps {
-  onNavigate: (page: string) => void;
-}
-
-const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
+const FormBuilder: React.FC = () => {
   const { globals } = useGlobal();
   const { apiCall } = useApi();
   const { showSuccess, showError } = useNotification();
@@ -858,11 +853,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="FormBuilder" onPageChange={onNavigate} />
-
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
             <FileText className="w-8 h-8 mr-3 text-blue-600" />
             Form Builder
@@ -874,7 +866,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onNavigate }) => {
         {renderPreviewModal()}
         {renderDeleteConfirmModal()}
       </div>
-    </Layout>
+    
   );
 };
 

@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import ProviderScheduleForm from '../components/ProviderScheduleForm';
 import { Calendar, Clock, Settings, User } from 'lucide-react';
 
-interface ProviderScheduleManagementProps {
-  onNavigate: (page: string) => void;
-}
-
-const ProviderScheduleManagement: React.FC<ProviderScheduleManagementProps> = ({ onNavigate }) => {
+const ProviderScheduleManagement: React.FC = () => {
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -64,11 +59,8 @@ const ProviderScheduleManagement: React.FC<ProviderScheduleManagementProps> = ({
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="ProviderScheduleManagement" onPageChange={onNavigate} />
-
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Provider Schedule Management</h1>
           <p className="text-gray-600">Configure working hours, breaks, and availability for providers</p>
         </div>
@@ -149,7 +141,7 @@ const ProviderScheduleManagement: React.FC<ProviderScheduleManagementProps> = ({
           )}
         </Modal>
       </div>
-    </Layout>
+    
   );
 };
 

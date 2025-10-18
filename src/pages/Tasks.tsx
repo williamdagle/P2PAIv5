@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
 import { Task } from '../types';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import TaskForm from '../components/TaskForm';
 import Button from '../components/Button';
 import { Plus, CheckCircle, Clock, AlertCircle, XCircle, Filter } from 'lucide-react';
 
-interface TasksProps {
-  onNavigate: (page: string) => void;
-}
-
-const Tasks: React.FC<TasksProps> = ({ onNavigate }) => {
+const Tasks: React.FC = () => {
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -187,10 +182,7 @@ const Tasks: React.FC<TasksProps> = ({ onNavigate }) => {
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="Tasks" onPageChange={onNavigate} />
-
-      <div>
+    <div>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -412,7 +404,7 @@ const Tasks: React.FC<TasksProps> = ({ onNavigate }) => {
           loading={deleteLoading}
         />
       </div>
-    </Layout>
+    
   );
 };
 

@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import DataTable from '../components/DataTable';
 import ApiErrorBoundary from '../components/ApiErrorBoundary';
 import { ShieldCheck, FileText, AlertTriangle, Activity, Lock, ClipboardCheck } from 'lucide-react';
 
-interface ComplianceReportingProps {
-  onNavigate: (page: string) => void;
-}
-
-const ComplianceReporting: React.FC<ComplianceReportingProps> = ({ onNavigate }) => {
+const ComplianceReporting: React.FC = () => {
   const { globals } = useGlobal();
   const { apiCall } = useApi();
   const [activeTab, setActiveTab] = useState<string>('reports');
@@ -363,11 +358,8 @@ const ComplianceReporting: React.FC<ComplianceReportingProps> = ({ onNavigate })
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="ComplianceReporting" onPageChange={onNavigate} />
-
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
             <ClipboardCheck className="w-8 h-8 mr-3 text-blue-600" />
             HIPAA Compliance Reporting
@@ -429,7 +421,7 @@ const ComplianceReporting: React.FC<ComplianceReportingProps> = ({ onNavigate })
           </>
         )}
       </div>
-    </Layout>
+    
   );
 };
 

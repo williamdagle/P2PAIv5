@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import DataTable from '../components/DataTable';
 import AestheticTreatmentForm from '../components/AestheticTreatmentForm';
 import { Sparkles, Plus, Eye, Edit, Trash2, Calendar } from 'lucide-react';
 
-interface AestheticTreatmentsProps {
-  onNavigate: (page: string) => void;
-}
-
-const AestheticTreatments: React.FC<AestheticTreatmentsProps> = ({ onNavigate }) => {
+const AestheticTreatments: React.FC = () => {
+  const navigate = useNavigate();
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -74,17 +70,17 @@ const AestheticTreatments: React.FC<AestheticTreatmentsProps> = ({ onNavigate })
 
   if (!globals.selected_patient_id) {
     return (
-      <Layout>
-        <Sidebar currentPage="AestheticTreatments" onPageChange={onNavigate} />
+      
+        
         <div className="text-center py-12">
           <Sparkles className="w-16 h-16 mx-auto mb-4 text-gray-400" />
           <h2 className="text-2xl font-semibold text-gray-900 mb-2">No Patient Selected</h2>
           <p className="text-gray-600 mb-6">Please select a patient to view treatments</p>
-          <Button onClick={() => onNavigate('Patients')}>
+          <Button onClick={() => navigate('/patients')}>
             Select Patient
           </Button>
         </div>
-      </Layout>
+      
     );
   }
 
@@ -144,10 +140,7 @@ const AestheticTreatments: React.FC<AestheticTreatmentsProps> = ({ onNavigate })
   ];
 
   return (
-    <Layout>
-      <Sidebar currentPage="AestheticTreatments" onPageChange={onNavigate} />
-
-      <div>
+    <div>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
@@ -192,7 +185,6 @@ const AestheticTreatments: React.FC<AestheticTreatmentsProps> = ({ onNavigate })
             />
           </div>
         )}
-      </div>
 
       <Modal
         isOpen={showFormModal}
@@ -341,7 +333,8 @@ const AestheticTreatments: React.FC<AestheticTreatmentsProps> = ({ onNavigate })
           </div>
         )}
       </Modal>
-    </Layout>
+    </div>
+    
   );
 };
 

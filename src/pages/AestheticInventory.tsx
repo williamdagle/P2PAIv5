@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
@@ -12,11 +11,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import FormField from '../components/FormField';
 import { Package, Plus, AlertTriangle, TrendingDown, Calendar, Edit, Trash2, PlusCircle, MinusCircle } from 'lucide-react';
 
-interface AestheticInventoryProps {
-  onNavigate: (page: string) => void;
-}
-
-const AestheticInventory: React.FC<AestheticInventoryProps> = ({ onNavigate }) => {
+const AestheticInventory: React.FC = () => {
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCallLegacy } = useApi();
@@ -203,10 +198,7 @@ const AestheticInventory: React.FC<AestheticInventoryProps> = ({ onNavigate }) =
   ];
 
   return (
-    <Layout>
-      <Sidebar currentPage="AestheticInventory" onPageChange={onNavigate} />
-
-      <div>
+    <div>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
@@ -468,7 +460,7 @@ const AestheticInventory: React.FC<AestheticInventoryProps> = ({ onNavigate }) =
           confirmVariant="danger"
         />
       </div>
-    </Layout>
+    
   );
 };
 

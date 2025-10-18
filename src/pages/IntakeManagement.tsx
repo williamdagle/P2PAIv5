@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import DataTable from '../components/DataTable';
 import { ClipboardList, AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react';
 
-interface IntakeManagementProps {
-  onNavigate: (page: string) => void;
-}
-
-const IntakeManagement: React.FC<IntakeManagementProps> = ({ onNavigate }) => {
+const IntakeManagement: React.FC = () => {
   const { globals } = useGlobal();
   const [activeTab, setActiveTab] = useState<'all' | 'assigned' | 'in_progress' | 'completed' | 'overdue'>('assigned');
 
@@ -32,11 +27,8 @@ const IntakeManagement: React.FC<IntakeManagementProps> = ({ onNavigate }) => {
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="IntakeManagement" onPageChange={onNavigate} />
-
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
             <ClipboardList className="w-8 h-8 mr-3 text-blue-600" />
             Intake Management
@@ -136,7 +128,7 @@ const IntakeManagement: React.FC<IntakeManagementProps> = ({ onNavigate }) => {
           />
         </div>
       </div>
-    </Layout>
+    
   );
 };
 

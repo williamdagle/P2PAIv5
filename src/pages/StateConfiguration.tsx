@@ -1,20 +1,15 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useApi } from '../hooks/useApi';
 import { useNotification } from '../hooks/useNotification';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import FormField from '../components/FormField';
 import DataTable from '../components/DataTable';
 import { MapPin, Plus, Edit, AlertCircle } from 'lucide-react';
 
-interface StateConfigurationProps {
-  onNavigate: (page: string) => void;
-}
-
-const StateConfiguration: React.FC<StateConfigurationProps> = ({ onNavigate }) => {
+const StateConfiguration: React.FC = () => {
   const { globals } = useGlobal();
   const { apiCall } = useApi();
   const { showSuccess, showError } = useNotification();
@@ -181,11 +176,8 @@ const StateConfiguration: React.FC<StateConfigurationProps> = ({ onNavigate }) =
   );
 
   return (
-    <Layout>
-      <Sidebar currentPage="StateConfiguration" onPageChange={onNavigate} />
-
-      <div>
-        <div className="mb-6 flex items-center justify-between">
+    <div>
+      <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
               <MapPin className="w-8 h-8 mr-3 text-blue-600" />
@@ -206,9 +198,9 @@ const StateConfiguration: React.FC<StateConfigurationProps> = ({ onNavigate }) =
             <p className="font-medium mb-1">State-Specific Compliance</p>
             <p>Configure retention policies and requirements for each state where you practice. Forms can be automatically assigned based on patient state.</p>
           </div>
-        </div>
+      </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <DataTable
             key={refreshKey}
             apiUrl={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get_state_configurations`}
@@ -298,7 +290,7 @@ const StateConfiguration: React.FC<StateConfigurationProps> = ({ onNavigate }) =
           </div>
         </Modal>
       </div>
-    </Layout>
+    
   );
 };
 

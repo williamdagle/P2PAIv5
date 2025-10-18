@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import DataTable from '../components/DataTable';
 import ApiErrorBoundary from '../components/ApiErrorBoundary';
 import Button from '../components/Button';
@@ -12,11 +11,7 @@ import UserForm from '../components/UserForm';
 import ClinicForm from '../components/ClinicForm';
 import { Plus, Users, Building2, AlertCircle, Share2 } from 'lucide-react';
 
-interface AdminProps {
-  onNavigate: (page: string) => void;
-}
-
-const Admin: React.FC<AdminProps> = ({ onNavigate }) => {
+const Admin: React.FC = () => {
   const { globals } = useGlobal();
   const { apiCall } = useApi();
   const [showUserModal, setShowUserModal] = useState(false);
@@ -139,11 +134,8 @@ const Admin: React.FC<AdminProps> = ({ onNavigate }) => {
   const isAdmin = userRole === 'System Admin';
 
   return (
-    <Layout>
-      <Sidebar currentPage="Admin" onPageChange={onNavigate} />
-      
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Panel</h1>
           <p className="text-gray-600">Clinic and user management</p>
         </div>
@@ -156,9 +148,9 @@ const Admin: React.FC<AdminProps> = ({ onNavigate }) => {
               <p><span className="font-medium">Clinic ID:</span> {globals.clinic_id}</p>
             </div>
           </div>
-        </div>
+      </div>
 
-        <div className="space-y-8">
+      <div className="space-y-8">
           {loadingRole ? (
             <div className="bg-white rounded-lg shadow-md p-8 text-center">
               <p className="text-gray-500">Loading user permissions...</p>
@@ -388,7 +380,7 @@ const Admin: React.FC<AdminProps> = ({ onNavigate }) => {
           confirmVariant="danger"
         />
       </div>
-    </Layout>
+    
   );
 };
 

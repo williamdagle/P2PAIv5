@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import {
   DollarSign,
   TrendingUp,
@@ -15,11 +14,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 
-interface AestheticAnalyticsProps {
-  onNavigate: (page: string) => void;
-}
-
-const AestheticAnalytics: React.FC<AestheticAnalyticsProps> = ({ onNavigate }) => {
+const AestheticAnalytics: React.FC = () => {
   const { globals } = useGlobal();
   const { apiCall } = useApi();
   const [loading, setLoading] = useState(true);
@@ -154,10 +149,7 @@ const AestheticAnalytics: React.FC<AestheticAnalyticsProps> = ({ onNavigate }) =
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="AestheticAnalytics" onPageChange={onNavigate} />
-
-      <div>
+    <div>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
@@ -324,7 +316,7 @@ const AestheticAnalytics: React.FC<AestheticAnalyticsProps> = ({ onNavigate }) =
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 };
 

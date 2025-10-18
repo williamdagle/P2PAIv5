@@ -1,10 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -12,11 +11,8 @@ import TimelineEventForm from '../components/TimelineEventForm';
 import Button from '../components/Button';
 import { Plus, X } from 'lucide-react';
 
-interface TimelineEventsProps {
-  onNavigate: (page: string) => void;
-}
-
-const TimelineEvents: React.FC<TimelineEventsProps> = ({ onNavigate }) => {
+const TimelineEvents: React.FC = () => {
+  const navigate = useNavigate();
   const { globals, setGlobal } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -39,7 +35,7 @@ const TimelineEvents: React.FC<TimelineEventsProps> = ({ onNavigate }) => {
     if (event.source === 'appointment') {
       // Store the appointment data and navigate to Appointments page
       setGlobal('pending_appointment_edit', event);
-      onNavigate('Appointments');
+      navigate('/appointments');
       return;
     }
     setEditingEvent(event);
@@ -50,7 +46,7 @@ const TimelineEvents: React.FC<TimelineEventsProps> = ({ onNavigate }) => {
     if (event.source === 'appointment') {
       // Store the appointment data and navigate to Appointments page
       setGlobal('pending_appointment_edit', event);
-      onNavigate('Appointments');
+      navigate('/appointments');
       return;
     }
     setDeletingEvent(event);
@@ -141,10 +137,7 @@ const TimelineEvents: React.FC<TimelineEventsProps> = ({ onNavigate }) => {
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="TimelineEvents" onPageChange={onNavigate} />
-      
-      <div>
+    <div>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -223,9 +216,9 @@ const TimelineEvents: React.FC<TimelineEventsProps> = ({ onNavigate }) => {
               </button>
             )}
           </div>
-        </div>
+      </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <DataTable
             key={`${refreshKey}-${buildQueryString()}`}
             apiUrl={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get_timeline_events?${buildQueryString()}`}
@@ -262,7 +255,7 @@ const TimelineEvents: React.FC<TimelineEventsProps> = ({ onNavigate }) => {
           loading={deleteLoading}
         />
       </div>
-    </Layout>
+    
   );
 };
 

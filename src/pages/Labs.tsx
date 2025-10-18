@@ -1,10 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -12,11 +11,8 @@ import LabForm from '../components/LabForm';
 import Button from '../components/Button';
 import { Plus } from 'lucide-react';
 
-interface LabsProps {
-  onNavigate: (page: string) => void;
-}
-
-const Labs: React.FC<LabsProps> = ({ onNavigate }) => {
+const Labs: React.FC = () => {
+  const navigate = useNavigate();
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -29,17 +25,17 @@ const Labs: React.FC<LabsProps> = ({ onNavigate }) => {
 
   if (!globals.selected_patient_id) {
     return (
-      <Layout>
-        <Sidebar currentPage="Labs" onPageChange={onNavigate} />
+      
+        
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <p className="text-gray-600 mb-4">Please select a patient first</p>
-            <Button onClick={() => onNavigate('Patients')}>
+            <Button onClick={() => navigate('/patients')}>
               Go to Patients
             </Button>
           </div>
         </div>
-      </Layout>
+      
     );
   }
 
@@ -94,10 +90,7 @@ const Labs: React.FC<LabsProps> = ({ onNavigate }) => {
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="Labs" onPageChange={onNavigate} />
-      
-      <div>
+    <div>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -151,7 +144,7 @@ const Labs: React.FC<LabsProps> = ({ onNavigate }) => {
           loading={deleteLoading}
         />
       </div>
-    </Layout>
+    
   );
 };
 

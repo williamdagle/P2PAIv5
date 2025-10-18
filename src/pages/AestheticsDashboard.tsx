@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import {
   Sparkles,
@@ -17,11 +16,8 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 
-interface AestheticsDashboardProps {
-  onNavigate: (page: string) => void;
-}
-
-const AestheticsDashboard: React.FC<AestheticsDashboardProps> = ({ onNavigate }) => {
+const AestheticsDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { globals } = useGlobal();
   const { showError } = useNotification();
   const { apiCall } = useApi();
@@ -97,10 +93,7 @@ const AestheticsDashboard: React.FC<AestheticsDashboardProps> = ({ onNavigate })
   ];
 
   return (
-    <Layout>
-      <Sidebar currentPage="AestheticsDashboard" onPageChange={onNavigate} />
-
-      <div>
+    <div>
         {globals.selected_patient_id && (
           <div className="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
             <div className="flex items-center">
@@ -172,9 +165,9 @@ const AestheticsDashboard: React.FC<AestheticsDashboardProps> = ({ onNavigate })
               );
             })}
           </div>
-        </div>
+      </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Getting Started</h2>
           <div className="space-y-3">
             <div className="flex items-center text-sm text-gray-700">
@@ -204,7 +197,7 @@ const AestheticsDashboard: React.FC<AestheticsDashboardProps> = ({ onNavigate })
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 };
 

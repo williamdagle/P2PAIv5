@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import DataTable from '../components/DataTable';
 import MembershipForm from '../components/MembershipForm';
 import { TrendingUp, Plus, Users, DollarSign, CreditCard, AlertCircle } from 'lucide-react';
 
-interface AestheticMembershipsProps {
-  onNavigate: (page: string) => void;
-}
-
-const AestheticMemberships: React.FC<AestheticMembershipsProps> = ({ onNavigate }) => {
+const AestheticMemberships: React.FC = () => {
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -115,10 +110,7 @@ const AestheticMemberships: React.FC<AestheticMembershipsProps> = ({ onNavigate 
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="AestheticMemberships" onPageChange={onNavigate} />
-
-      <div>
+    <div>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -126,9 +118,9 @@ const AestheticMemberships: React.FC<AestheticMembershipsProps> = ({ onNavigate 
             </h1>
             <p className="text-gray-600">Manage recurring membership programs</p>
           </div>
-        </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium text-gray-600">Active Members</p>
@@ -152,9 +144,9 @@ const AestheticMemberships: React.FC<AestheticMembershipsProps> = ({ onNavigate 
             </div>
             <p className="text-2xl font-bold text-gray-900">${stats.totalCredits.toFixed(2)}</p>
           </div>
-        </div>
+      </div>
 
-        <div className="mb-6">
+      <div className="mb-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Enroll New Member</h2>
           <div className="bg-white rounded-lg shadow-md p-6">
             <p className="text-sm text-gray-600 mb-4">Select a patient to enroll in a membership program</p>
@@ -179,9 +171,9 @@ const AestheticMemberships: React.FC<AestheticMembershipsProps> = ({ onNavigate 
               </div>
             )}
           </div>
-        </div>
+      </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="p-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">Active Memberships</h2>
           </div>
@@ -288,7 +280,7 @@ const AestheticMemberships: React.FC<AestheticMembershipsProps> = ({ onNavigate 
           </Modal>
         )}
       </div>
-    </Layout>
+    
   );
 };
 

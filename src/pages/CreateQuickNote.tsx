@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import FormField from '../components/FormField';
 import { ArrowLeft, CreditCard as Edit3, Save } from 'lucide-react';
 
-interface CreateQuickNoteProps {
-  onNavigate: (page: string) => void;
-}
-
-const CreateQuickNote: React.FC<CreateQuickNoteProps> = ({ onNavigate }) => {
+const CreateQuickNote: React.FC = () => {
+  const navigate = useNavigate();
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -93,11 +89,8 @@ const CreateQuickNote: React.FC<CreateQuickNoteProps> = ({ onNavigate }) => {
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="CreateQuickNote" onPageChange={onNavigate} />
-
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <Button
             variant="secondary"
             onClick={() => onNavigate('ClinicalNotes')}
@@ -184,7 +177,7 @@ const CreateQuickNote: React.FC<CreateQuickNoteProps> = ({ onNavigate }) => {
           </form>
         </div>
       </div>
-    </Layout>
+    
   );
 };
 

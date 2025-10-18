@@ -1,32 +1,25 @@
 import React, { useState } from 'react';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
+import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import PatientForm from '../components/PatientForm';
 import { ArrowLeft } from 'lucide-react';
 
-interface CreatePatientProps {
-  onNavigate: (page: string) => void;
-}
-
-const CreatePatient: React.FC<CreatePatientProps> = ({ onNavigate }) => {
+const CreatePatient: React.FC = () => {
+  const navigate = useNavigate();
   const handleSuccess = () => {
-    onNavigate('Patients');
+    navigate('/patients');
   };
 
   const handleCancel = () => {
-    onNavigate('Patients');
+    navigate('/patients');
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="CreatePatient" onPageChange={onNavigate} />
-      
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <Button
             variant="secondary"
-            onClick={() => onNavigate('Patients')}
+            onClick={() => navigate('/patients')}
             className="mb-4 flex items-center"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -43,7 +36,7 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ onNavigate }) => {
           />
         </div>
       </div>
-    </Layout>
+    
   );
 };
 

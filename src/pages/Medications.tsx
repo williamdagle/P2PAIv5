@@ -1,10 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -12,11 +11,7 @@ import MedicationForm from '../components/MedicationForm';
 import Button from '../components/Button';
 import { Plus } from 'lucide-react';
 
-interface MedicationsProps {
-  onNavigate: (page: string) => void;
-}
-
-const Medications: React.FC<MedicationsProps> = ({ onNavigate }) => {
+const Medications: React.FC = () => {
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -78,10 +73,7 @@ const Medications: React.FC<MedicationsProps> = ({ onNavigate }) => {
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="Medications" onPageChange={onNavigate} />
-      
-      <div>
+    <div>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -135,7 +127,7 @@ const Medications: React.FC<MedicationsProps> = ({ onNavigate }) => {
           loading={deleteLoading}
         />
       </div>
-    </Layout>
+    
   );
 };
 

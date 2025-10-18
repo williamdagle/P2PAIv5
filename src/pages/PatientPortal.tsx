@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Shield, Mail, Users } from 'lucide-react';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import PatientPortalAccessForm from '../components/PatientPortalAccessForm';
 import SecureMessaging from '../components/SecureMessaging';
 import DataTable from '../components/DataTable';
 
-interface PatientPortalProps {
-  onNavigate: (page: string) => void;
-}
-
-const PatientPortal: React.FC<PatientPortalProps> = ({ onNavigate }) => {
+const PatientPortal: React.FC = () => {
   const { user } = useGlobal();
   const { addNotification } = useNotification();
   const [portalAccess, setPortalAccess] = useState<any[]>([]);
@@ -162,8 +157,8 @@ const PatientPortal: React.FC<PatientPortalProps> = ({ onNavigate }) => {
   }
 
   return (
-    <Layout>
-      <Sidebar currentPage="PatientPortal" onPageChange={onNavigate} />
+    
+      
 
       <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -244,7 +239,7 @@ const PatientPortal: React.FC<PatientPortalProps> = ({ onNavigate }) => {
         />
       </Modal>
       </div>
-    </Layout>
+    
   );
 };
 

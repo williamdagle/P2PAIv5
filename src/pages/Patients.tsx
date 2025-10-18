@@ -1,10 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -12,11 +11,8 @@ import PatientForm from '../components/PatientForm';
 import Button from '../components/Button';
 import { Plus } from 'lucide-react';
 
-interface PatientsProps {
-  onNavigate: (page: string) => void;
-}
-
-const Patients: React.FC<PatientsProps> = ({ onNavigate }) => {
+const Patients: React.FC = () => {
+  const navigate = useNavigate();
   const { setGlobal } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -37,7 +33,7 @@ const Patients: React.FC<PatientsProps> = ({ onNavigate }) => {
     console.log('👤 Patient selected:', row);
     setGlobal('selected_patient_id', row.id);
     setGlobal('selected_patient_name', `${row.first_name} ${row.last_name}`);
-    onNavigate('PatientChart');
+    navigate(`/patients/${row.id}/chart`);
   };
 
   const handleEdit = (patient: any) => {
@@ -86,17 +82,14 @@ const Patients: React.FC<PatientsProps> = ({ onNavigate }) => {
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="Patients" onPageChange={onNavigate} />
-      
-      <div>
+    <div>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Patients</h1>
             <p className="text-gray-600">Manage patient records and information</p>
           </div>
           <Button
-            onClick={() => onNavigate('CreatePatient')}
+            onClick={() => navigate('/patients/create')}
             className="flex items-center"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -144,7 +137,7 @@ const Patients: React.FC<PatientsProps> = ({ onNavigate }) => {
           loading={deleteLoading}
         />
       </div>
-    </Layout>
+    
   );
 };
 

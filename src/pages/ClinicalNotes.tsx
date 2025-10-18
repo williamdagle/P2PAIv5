@@ -1,21 +1,17 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Button from '../components/Button';
 import { Plus, FileText, CreditCard as Edit3, Stethoscope } from 'lucide-react';
 
-interface ClinicalNotesProps {
-  onNavigate: (page: string) => void;
-}
-
-const ClinicalNotes: React.FC<ClinicalNotesProps> = ({ onNavigate }) => {
+const ClinicalNotes: React.FC = () => {
+  const navigate = useNavigate();
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -29,9 +25,9 @@ const ClinicalNotes: React.FC<ClinicalNotesProps> = ({ onNavigate }) => {
     if (note.note_type === 'provider_note') {
       // Store note data for editing
       // For now, navigate to create page - will enhance later
-      onNavigate('CreateProviderNote');
+      navigate('/notes/provider');
     } else {
-      onNavigate('CreateQuickNote');
+      navigate('/notes/quick');
     }
   };
 
@@ -62,10 +58,7 @@ const ClinicalNotes: React.FC<ClinicalNotesProps> = ({ onNavigate }) => {
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="ClinicalNotes" onPageChange={onNavigate} />
-      
-      <div>
+    <div>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -75,7 +68,7 @@ const ClinicalNotes: React.FC<ClinicalNotesProps> = ({ onNavigate }) => {
           </div>
           <div className="flex space-x-3">
             <Button
-              onClick={() => onNavigate('CreateQuickNote')}
+              onClick={() => navigate('/notes/quick')}
               variant="secondary"
               className="flex items-center"
             >
@@ -83,16 +76,16 @@ const ClinicalNotes: React.FC<ClinicalNotesProps> = ({ onNavigate }) => {
               Quick Note
             </Button>
             <Button
-              onClick={() => onNavigate('CreateProviderNote')}
+              onClick={() => navigate('/notes/provider')}
               className="flex items-center"
             >
               <Stethoscope className="w-4 h-4 mr-2" />
               Provider Note
             </Button>
           </div>
-        </div>
+      </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <DataTable
             key={refreshKey}
             apiUrl={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get_clinical_notes?patient_id=${globals.selected_patient_id}`}
@@ -117,7 +110,7 @@ const ClinicalNotes: React.FC<ClinicalNotesProps> = ({ onNavigate }) => {
           loading={deleteLoading}
         />
       </div>
-    </Layout>
+    
   );
 };
 

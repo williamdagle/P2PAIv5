@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import DataTable from '../components/DataTable';
 import ApiErrorBoundary from '../components/ApiErrorBoundary';
 import Button from '../components/Button';
@@ -11,11 +10,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import AppointmentTypeForm from '../components/AppointmentTypeForm';
 import { Plus, Calendar, AlertCircle } from 'lucide-react';
 
-interface ManageAppointmentTypesProps {
-  onNavigate: (page: string) => void;
-}
-
-const ManageAppointmentTypes: React.FC<ManageAppointmentTypesProps> = ({ onNavigate }) => {
+const ManageAppointmentTypes: React.FC = () => {
   const { globals } = useGlobal();
   const { apiCall } = useApi();
   const [showModal, setShowModal] = useState(false);
@@ -91,11 +86,8 @@ const ManageAppointmentTypes: React.FC<ManageAppointmentTypesProps> = ({ onNavig
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="ManageAppointmentTypes" onPageChange={onNavigate} />
-
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Appointment Types</h1>
           <p className="text-gray-600">Configure appointment types, colors, durations, and approval workflows</p>
         </div>
@@ -223,7 +215,7 @@ const ManageAppointmentTypes: React.FC<ManageAppointmentTypesProps> = ({ onNavig
           confirmVariant="danger"
         />
       </div>
-    </Layout>
+    
   );
 };
 

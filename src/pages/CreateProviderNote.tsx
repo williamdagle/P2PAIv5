@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import FormField from '../components/FormField';
 import { ArrowLeft, Stethoscope, Save, FileText } from 'lucide-react';
-
-interface CreateProviderNoteProps {
-  onNavigate: (page: string) => void;
-}
 
 interface Template {
   id: string;
@@ -26,7 +21,8 @@ interface Template {
   };
 }
 
-const CreateProviderNote: React.FC<CreateProviderNoteProps> = ({ onNavigate }) => {
+const CreateProviderNote: React.FC = () => {
+  const navigate = useNavigate();
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -142,11 +138,8 @@ const CreateProviderNote: React.FC<CreateProviderNoteProps> = ({ onNavigate }) =
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="CreateProviderNote" onPageChange={onNavigate} />
-
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <Button
             variant="secondary"
             onClick={() => onNavigate('ClinicalNotes')}
@@ -253,7 +246,7 @@ const CreateProviderNote: React.FC<CreateProviderNoteProps> = ({ onNavigate }) =
           </form>
         </div>
       </div>
-    </Layout>
+    
   );
 };
 

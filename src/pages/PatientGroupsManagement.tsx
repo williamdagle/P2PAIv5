@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useApi } from '../hooks/useApi';
 import { useNotification } from '../hooks/useNotification';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import FormField from '../components/FormField';
@@ -11,11 +10,7 @@ import DataTable from '../components/DataTable';
 import { Users, Plus, Edit, Trash2, UserPlus, Calendar, CheckCircle } from 'lucide-react';
 import type { PatientGroup, Resource, User } from '../types';
 
-interface PatientGroupsManagementProps {
-  onNavigate: (page: string) => void;
-}
-
-const PatientGroupsManagement: React.FC<PatientGroupsManagementProps> = ({ onNavigate }) => {
+const PatientGroupsManagement: React.FC = () => {
   const { globals } = useGlobal();
   const { apiCall } = useApi();
   const { showSuccess, showError } = useNotification();
@@ -383,11 +378,8 @@ const PatientGroupsManagement: React.FC<PatientGroupsManagementProps> = ({ onNav
   );
 
   return (
-    <Layout>
-      <Sidebar currentPage="PatientGroupsManagement" onPageChange={onNavigate} />
-
-      <div>
-        <div className="mb-6 flex items-center justify-between">
+    <div>
+      <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
               <Users className="w-8 h-8 mr-3 text-blue-600" />
@@ -506,7 +498,7 @@ const PatientGroupsManagement: React.FC<PatientGroupsManagementProps> = ({ onNav
           </div>
         </Modal>
       </div>
-    </Layout>
+    
   );
 };
 

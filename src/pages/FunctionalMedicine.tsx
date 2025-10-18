@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import TimelineUnified from '../components/TimelineUnified';
@@ -14,11 +13,8 @@ import HealthGoalForm from '../components/HealthGoalForm';
 import FoodSensitivityForm from '../components/FoodSensitivityForm';
 import { User, Calendar, Grid2x2 as Grid, HeartPulse, Target, Apple } from 'lucide-react';
 
-interface FunctionalMedicineProps {
-  onNavigate: (page: string) => void;
-}
-
-const FunctionalMedicine: React.FC<FunctionalMedicineProps> = ({ onNavigate }) => {
+const FunctionalMedicine: React.FC = () => {
+  const navigate = useNavigate();
   const { globals } = useGlobal();
   const { showError, showSuccess } = useNotification();
   const { apiCall } = useApi();
@@ -87,19 +83,19 @@ const FunctionalMedicine: React.FC<FunctionalMedicineProps> = ({ onNavigate }) =
 
   if (!globals.selected_patient_id) {
     return (
-      <Layout>
-        <Sidebar currentPage="FunctionalMedicine" onPageChange={onNavigate} />
+      
+        
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
             <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-700 mb-2">No Patient Selected</h2>
             <p className="text-gray-500 mb-4">Please select a patient to view functional medicine features</p>
-            <Button onClick={() => onNavigate('Patients')}>
+            <Button onClick={() => navigate('/patients')}>
               Go to Patients
             </Button>
           </div>
         </div>
-      </Layout>
+      
     );
   }
 
@@ -112,20 +108,17 @@ const FunctionalMedicine: React.FC<FunctionalMedicineProps> = ({ onNavigate }) =
   ];
 
   return (
-    <Layout>
-      <Sidebar currentPage="FunctionalMedicine" onPageChange={onNavigate} />
-
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Functional Medicine</h1>
               <p className="text-gray-600">{globals.selected_patient_name || 'Loading...'}</p>
             </div>
           </div>
-        </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-4">
               <h3 className="font-semibold text-gray-900 mb-4">Sections</h3>
@@ -349,7 +342,6 @@ const FunctionalMedicine: React.FC<FunctionalMedicineProps> = ({ onNavigate }) =
             )}
           </div>
         </div>
-      </div>
 
       {showIFMMatrixModal && (
         <Modal
@@ -412,7 +404,7 @@ const FunctionalMedicine: React.FC<FunctionalMedicineProps> = ({ onNavigate }) =
           />
         </Modal>
       )}
-    </Layout>
+    </div>
   );
 };
 

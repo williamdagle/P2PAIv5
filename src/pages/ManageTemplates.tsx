@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { useNotification } from '../hooks/useNotification';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import DataTable from '../components/DataTable';
@@ -11,11 +10,7 @@ import TemplateForm from '../components/TemplateForm';
 import CategoryForm from '../components/CategoryForm';
 import { Plus, Settings, FileText, User, Users } from 'lucide-react';
 
-interface ManageTemplatesProps {
-  onNavigate: (page: string) => void;
-}
-
-const ManageTemplates: React.FC<ManageTemplatesProps> = ({ onNavigate }) => {
+const ManageTemplates: React.FC = () => {
   const [showTemplateForm, setShowTemplateForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<any>(null);
@@ -175,11 +170,8 @@ const ManageTemplates: React.FC<ManageTemplatesProps> = ({ onNavigate }) => {
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="ManageTemplates" onPageChange={onNavigate} />
-      
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Templates & Categories</h1>
           <p className="text-gray-600">Configure note templates and categories for your clinic</p>
         </div>
@@ -348,7 +340,7 @@ const ManageTemplates: React.FC<ManageTemplatesProps> = ({ onNavigate }) => {
           loading={deleteLoading}
         />
       </div>
-    </Layout>
+    
   );
 };
 

@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useApi } from '../hooks/useApi';
 import { useNotification } from '../hooks/useNotification';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import FormField from '../components/FormField';
 import { Settings, Clock, Shield, Bell, Database, Activity, AlertCircle } from 'lucide-react';
-
-interface SystemSettingsProps {
-  onNavigate: (page: string) => void;
-}
 
 interface SystemSettingsData {
   id: string;
@@ -42,7 +37,7 @@ interface SystemSettingsData {
   lab_result_auto_notify_provider: boolean;
 }
 
-const SystemSettings: React.FC<SystemSettingsProps> = ({ onNavigate }) => {
+const SystemSettings: React.FC = () => {
   const { globals } = useGlobal();
   const { apiCall } = useApi();
   const { showSuccess, showError } = useNotification();
@@ -118,21 +113,19 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ onNavigate }) => {
 
   if (loading) {
     return (
-      <Layout>
-        <Sidebar currentPage="SystemSettings" onPageChange={onNavigate} />
+      
+        
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           <span className="ml-3 text-gray-600">Loading settings...</span>
         </div>
-      </Layout>
+      
     );
   }
 
   if (userRole !== 'System Admin') {
     return (
-      <Layout>
-        <Sidebar currentPage="SystemSettings" onPageChange={onNavigate} />
-        <div>
+    <div>
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">System Settings</h1>
             <p className="text-gray-600">Configure system-wide defaults and preferences</p>
@@ -156,27 +149,24 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ onNavigate }) => {
             </div>
           </div>
         </div>
-      </Layout>
+      
     );
   }
 
   if (!settings) {
     return (
-      <Layout>
-        <Sidebar currentPage="SystemSettings" onPageChange={onNavigate} />
+      
+        
         <div className="bg-white rounded-lg shadow-md p-8 text-center">
           <p className="text-gray-600">No settings found.</p>
         </div>
-      </Layout>
+      
     );
   }
 
   return (
-    <Layout>
-      <Sidebar currentPage="SystemSettings" onPageChange={onNavigate} />
-
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">System Settings</h1>
           <p className="text-gray-600">Configure system-wide defaults and preferences</p>
         </div>
@@ -587,7 +577,7 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 };
 

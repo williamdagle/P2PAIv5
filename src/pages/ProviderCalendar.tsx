@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApiWithCircuitBreaker } from '../hooks/useApiWithCircuitBreaker';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { validateDataClinicIds, filterDataByClinic } from '../utils/patientLookup';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import FormField from '../components/FormField';
 import ApiErrorBoundary from '../components/ApiErrorBoundary';
@@ -13,10 +12,6 @@ import ThreeDayView from '../components/calendar/ThreeDayView';
 import WeekView from '../components/calendar/WeekView';
 import MonthView from '../components/calendar/MonthView';
 import { Calendar, ChevronLeft, ChevronRight, Clock, User, Building2 } from 'lucide-react';
-
-interface ProviderCalendarProps {
-  onNavigate: (page: string) => void;
-}
 
 interface Appointment {
   id: string;
@@ -34,7 +29,7 @@ interface Provider {
   clinic_id: string;
 }
 
-const ProviderCalendar: React.FC<ProviderCalendarProps> = ({ onNavigate }) => {
+const ProviderCalendar: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedProvider, setSelectedProvider] = useState<string>('');
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -431,11 +426,8 @@ const ProviderCalendar: React.FC<ProviderCalendarProps> = ({ onNavigate }) => {
   const selectedProviderName = providers.find(p => p.id === selectedProvider)?.full_name || '';
 
   return (
-    <Layout>
-      <Sidebar currentPage="ProviderCalendar" onPageChange={onNavigate} />
-      
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Provider Calendar</h1>
@@ -704,7 +696,7 @@ const ProviderCalendar: React.FC<ProviderCalendarProps> = ({ onNavigate }) => {
           </div>
         )}
       </div>
-    </Layout>
+    
   );
 };
 

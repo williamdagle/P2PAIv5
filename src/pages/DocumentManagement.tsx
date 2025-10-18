@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Upload, FileText } from 'lucide-react';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import DocumentUploadForm from '../components/DocumentUploadForm';
 import DocumentViewer from '../components/DocumentViewer';
 
-interface DocumentManagementProps {
-  onNavigate: (page: string) => void;
-}
-
-const DocumentManagement: React.FC<DocumentManagementProps> = ({ onNavigate }) => {
+const DocumentManagement: React.FC = () => {
   const { user } = useGlobal();
   const { addNotification } = useNotification();
   const [documents, setDocuments] = useState<any[]>([]);
@@ -132,8 +127,8 @@ const DocumentManagement: React.FC<DocumentManagementProps> = ({ onNavigate }) =
   }
 
   return (
-    <Layout>
-      <Sidebar currentPage="DocumentManagement" onPageChange={onNavigate} />
+    
+      
 
       <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -174,7 +169,7 @@ const DocumentManagement: React.FC<DocumentManagementProps> = ({ onNavigate }) =
         />
       </Modal>
       </div>
-    </Layout>
+    
   );
 };
 

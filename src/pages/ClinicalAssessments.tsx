@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, FileText, Calendar } from 'lucide-react';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
@@ -10,11 +9,7 @@ import { useNotification } from '../hooks/useNotification';
 import { useGlobal } from '../context/GlobalContext';
 import { useApi } from '../hooks/useApi';
 
-interface ClinicalAssessmentsProps {
-  onNavigate: (page: string) => void;
-}
-
-const ClinicalAssessments: React.FC<ClinicalAssessmentsProps> = ({ onNavigate }) => {
+const ClinicalAssessments: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedAssessment, setSelectedAssessment] = useState<any>(null);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
@@ -77,9 +72,7 @@ const ClinicalAssessments: React.FC<ClinicalAssessmentsProps> = ({ onNavigate })
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="ClinicalAssessments" onPageChange={onNavigate} />
-
+    <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -149,7 +142,8 @@ const ClinicalAssessments: React.FC<ClinicalAssessmentsProps> = ({ onNavigate })
           />
         )}
       </Modal>
-    </Layout>
+    
+    </div>
   );
 };
 

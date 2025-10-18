@@ -1,10 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -12,11 +11,7 @@ import AppointmentForm from '../components/AppointmentForm';
 import Button from '../components/Button';
 import { Plus } from 'lucide-react';
 
-interface AppointmentsProps {
-  onNavigate: (page: string) => void;
-}
-
-const Appointments: React.FC<AppointmentsProps> = ({ onNavigate }) => {
+const Appointments: React.FC = () => {
   const { globals, setGlobal } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -91,10 +86,7 @@ const Appointments: React.FC<AppointmentsProps> = ({ onNavigate }) => {
   };
 
   return (
-    <Layout>
-      <Sidebar currentPage="Appointments" onPageChange={onNavigate} />
-      
-      <div>
+    <div>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -177,7 +169,7 @@ const Appointments: React.FC<AppointmentsProps> = ({ onNavigate }) => {
           loading={deleteLoading}
         />
       </div>
-    </Layout>
+    
   );
 };
 

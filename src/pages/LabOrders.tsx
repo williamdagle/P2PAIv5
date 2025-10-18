@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, TestTube, Calendar } from 'lucide-react';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
@@ -10,11 +9,7 @@ import { useNotification } from '../hooks/useNotification';
 import { useGlobal } from '../context/GlobalContext';
 import { useApi } from '../hooks/useApi';
 
-interface LabOrdersProps {
-  onNavigate: (page: string) => void;
-}
-
-const LabOrders: React.FC<LabOrdersProps> = ({ onNavigate }) => {
+const LabOrders: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
@@ -58,9 +53,7 @@ const LabOrders: React.FC<LabOrdersProps> = ({ onNavigate }) => {
 
 
   return (
-    <Layout>
-      <Sidebar currentPage="LabOrders" onPageChange={onNavigate} />
-
+    <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -142,7 +135,8 @@ const LabOrders: React.FC<LabOrdersProps> = ({ onNavigate }) => {
           />
         )}
       </Modal>
-    </Layout>
+    
+    </div>
   );
 };
 

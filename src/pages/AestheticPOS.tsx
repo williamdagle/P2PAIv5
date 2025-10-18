@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
@@ -20,10 +19,6 @@ import {
   Trash2
 } from 'lucide-react';
 
-interface AestheticPOSProps {
-  onNavigate: (page: string) => void;
-}
-
 interface LineItem {
   id: string;
   name: string;
@@ -35,7 +30,7 @@ interface LineItem {
 
 const PAYMENT_METHODS = ['Cash', 'Credit Card', 'Debit Card', 'Check', 'Gift Card', 'Membership Credit', 'Other'];
 
-const AestheticPOS: React.FC<AestheticPOSProps> = ({ onNavigate }) => {
+const AestheticPOS: React.FC = () => {
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
@@ -217,11 +212,8 @@ const AestheticPOS: React.FC<AestheticPOSProps> = ({ onNavigate }) => {
   ];
 
   return (
-    <Layout>
-      <Sidebar currentPage="AestheticPOS" onPageChange={onNavigate} />
-
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
             <DollarSign className="w-8 h-8 mr-3 text-green-600" />
             Point of Sale & Billing
@@ -548,7 +540,7 @@ const AestheticPOS: React.FC<AestheticPOSProps> = ({ onNavigate }) => {
           />
         </Modal>
       </div>
-    </Layout>
+    
   );
 };
 

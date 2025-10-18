@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import VitalSignsForm from '../components/VitalSignsForm';
@@ -37,11 +36,8 @@ import {
   TestTube
 } from 'lucide-react';
 
-interface PatientChartProps {
-  onNavigate: (page: string) => void;
-}
-
-const PatientChart: React.FC<PatientChartProps> = ({ onNavigate }) => {
+const PatientChart: React.FC = () => {
+  const navigate = useNavigate();
   const { globals } = useGlobal();
   const { showError, showSuccess } = useNotification();
   const { apiCall } = useApi();
@@ -256,19 +252,19 @@ const PatientChart: React.FC<PatientChartProps> = ({ onNavigate }) => {
 
   if (!globals.selected_patient_id) {
     return (
-      <Layout>
-        <Sidebar currentPage="PatientChart" onPageChange={onNavigate} />
+      
+        
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
             <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-700 mb-2">No Patient Selected</h2>
             <p className="text-gray-500 mb-4">Please select a patient to view their chart</p>
-            <Button onClick={() => onNavigate('Patients')}>
+            <Button onClick={() => navigate('/patients')}>
               Go to Patients
             </Button>
           </div>
         </div>
-      </Layout>
+      
     );
   }
 
@@ -291,11 +287,8 @@ const PatientChart: React.FC<PatientChartProps> = ({ onNavigate }) => {
   const latestVitals = vitalSigns[0];
 
   return (
-    <Layout>
-      <Sidebar currentPage="PatientChart" onPageChange={onNavigate} />
-
-      <div>
-        <div className="mb-6">
+    <div>
+      <div className="mb-6">
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Patient Chart</h1>
@@ -303,7 +296,7 @@ const PatientChart: React.FC<PatientChartProps> = ({ onNavigate }) => {
             </div>
             <div className="flex gap-2">
               <Button
-                onClick={() => onNavigate('CreateProviderNote')}
+                onClick={() => navigate('/notes/provider')}
                 variant="primary"
                 className="flex items-center gap-2"
               >
@@ -312,9 +305,9 @@ const PatientChart: React.FC<PatientChartProps> = ({ onNavigate }) => {
               </Button>
             </div>
           </div>
-        </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-4">
               <h3 className="font-semibold text-gray-900 mb-4">Chart Sections</h3>
@@ -1047,7 +1040,6 @@ const PatientChart: React.FC<PatientChartProps> = ({ onNavigate }) => {
             )}
           </div>
         </div>
-      </div>
 
       {showVitalSignsModal && (
         <Modal isOpen={true} title="Record Vital Signs" onClose={() => setShowVitalSignsModal(false)}>
@@ -1118,7 +1110,7 @@ const PatientChart: React.FC<PatientChartProps> = ({ onNavigate }) => {
           />
         </Modal>
       )}
-    </Layout>
+    </div>
   );
 };
 

@@ -1,16 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import SystemStatus from '../components/SystemStatus';
 import { Users, Calendar, Activity, BarChart3 } from 'lucide-react';
 
-interface DashboardProps {
-  onNavigate: (page: string) => void;
-}
-
-const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
+const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { globals } = useGlobal();
 
   const quickActions = [
@@ -18,14 +14,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       title: 'Patient Management',
       description: 'View and manage patient records',
       icon: Users,
-      action: () => onNavigate('Patients'),
+      action: () => navigate('/patients'),
       color: 'bg-blue-500'
     },
     {
       title: 'Appointments',
       description: 'Schedule and view appointments',
       icon: Calendar,
-      action: () => onNavigate('Appointments'),
+      action: () => navigate('/appointments'),
       color: 'bg-green-500',
       disabled: !globals.selected_patient_id
     },
@@ -33,7 +29,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       title: 'Treatment Plans',
       description: 'Manage patient treatment plans',
       icon: Activity,
-      action: () => onNavigate('TreatmentPlans'),
+      action: () => navigate('/treatment-plans'),
       color: 'bg-purple-500',
       disabled: !globals.selected_patient_id
     },
@@ -41,16 +37,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       title: 'Analytics',
       description: 'View clinic performance metrics',
       icon: BarChart3,
-      action: () => onNavigate('Admin'),
+      action: () => navigate('/admin'),
       color: 'bg-orange-500'
     }
   ];
 
   return (
-    <Layout>
-      <Sidebar currentPage="Dashboard" onPageChange={onNavigate} />
-      
-      <div>
+    <div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to P2PAI</h1>
           <p className="text-gray-600">your Functional Medicine EMR system</p>
@@ -114,7 +107,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <SystemStatus />
         </div>
       </div>
-    </Layout>
+    
   );
 };
 
