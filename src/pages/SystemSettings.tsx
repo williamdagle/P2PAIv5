@@ -57,6 +57,9 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ onNavigate }) => {
   useEffect(() => {
     loadUserRole();
     loadSettings();
+  }, []);
+
+  useEffect(() => {
     loadOrganizations();
   }, [orgRefreshKey]);
 
@@ -106,6 +109,17 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ onNavigate }) => {
   };
 
   const handleToggleOrgSharing = async (orgId: string, currentValue: boolean) => {
+    const newValue = !currentValue;
+
+    // Optimistic update
+    setOrganizations(prev =>
+      prev.map(org =>
+        org.id === orgId
+          ? { ...org, enable_data_sharing: newValue }
+          : org
+      )
+    );
+
     try {
       await apiCall(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update_organizations`,
@@ -113,13 +127,20 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ onNavigate }) => {
           method: 'PUT',
           body: {
             id: orgId,
-            enable_data_sharing: !currentValue
+            enable_data_sharing: newValue
           }
         }
       );
-      setOrgRefreshKey(prev => prev + 1);
-      showSuccess('Organization data sharing updated');
+      showSuccess(`Data sharing ${newValue ? 'enabled' : 'disabled'}`);
     } catch (err) {
+      // Revert on error
+      setOrganizations(prev =>
+        prev.map(org =>
+          org.id === orgId
+            ? { ...org, enable_data_sharing: currentValue }
+            : org
+        )
+      );
       showError('Failed to update organization sharing setting');
     }
   };

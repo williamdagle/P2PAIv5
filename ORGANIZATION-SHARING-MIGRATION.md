@@ -11,12 +11,19 @@ Moved the Organization Data Sharing setting from the Admin page to the System Se
   - `organizations` - stores list of organizations
   - `orgRefreshKey` - triggers refresh when sharing is toggled
 - New function `loadOrganizations()` - fetches organizations from API
-- New function `handleToggleOrgSharing()` - updates organization sharing setting
+- New function `handleToggleOrgSharing()` - updates organization sharing setting with:
+  - **Optimistic UI updates** - toggles respond immediately for better UX
+  - **Error recovery** - reverts state if API call fails
+  - **User feedback** - success/error notifications
+- Separate useEffect hooks for better performance:
+  - Initial load (user role, settings) - runs once
+  - Organization reload (only when orgRefreshKey changes)
 - New UI section in Features tab:
   - Section title with Share2 icon
   - Description of data sharing feature
-  - List of organizations with toggle switches
+  - **Fully interactive toggle switches** for each organization
   - Each organization shows: name, org_id, and enable/disable toggle
+  - Real-time state updates with smooth UX
 
 **Location:** Features tab (bottom section, after all feature toggles)
 
@@ -24,6 +31,12 @@ Moved the Organization Data Sharing setting from the Admin page to the System Se
 - Purple accent color (matches organization theme)
 - Cards with white background and gray borders
 - Toggle switches with purple accent when enabled
+
+**Functionality:**
+- ✅ Click toggle to immediately enable/disable data sharing
+- ✅ Changes persist to database via API
+- ✅ Success notification on save
+- ✅ Error notification with automatic rollback on failure
 
 ### 2. Admin.tsx (`/admin`)
 **Removed:**
