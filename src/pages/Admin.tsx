@@ -10,7 +10,7 @@ import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import UserForm from '../components/UserForm';
 import ClinicForm from '../components/ClinicForm';
-import { Plus, Users, Building2, AlertCircle } from 'lucide-react';
+import { Plus, Users, Building2, AlertCircle, Share2 } from 'lucide-react';
 
 interface AdminProps {
   onNavigate: (page: string) => void;
@@ -27,6 +27,7 @@ const Admin: React.FC<AdminProps> = ({ onNavigate }) => {
   const [deletingClinic, setDeletingClinic] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [clinicRefreshKey, setClinicRefreshKey] = useState(0);
+  const [orgRefreshKey, setOrgRefreshKey] = useState(0);
   const [userRole, setUserRole] = useState<string>('');
   const [loadingRole, setLoadingRole] = useState(true);
 
@@ -280,6 +281,61 @@ const Admin: React.FC<AdminProps> = ({ onNavigate }) => {
                       onDelete={handleDeleteClinic}
                       searchable={true}
                       searchPlaceholder="Search clinics by name or type..."
+                    />
+                  </div>
+                </ApiErrorBoundary>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <Share2 className="w-6 h-6 text-purple-600 mr-2" />
+                    <h2 className="text-xl font-semibold text-gray-900">Organizations</h2>
+                  </div>
+                </div>
+                <ApiErrorBoundary
+                  functionName="get_organizations"
+                  showFunctionHelp={true}
+                >
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <DataTable
+                      key={orgRefreshKey}
+                      apiUrl={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get_organizations`}
+                      columns={['name', 'org_id', 'enable_data_sharing']}
+                      customRenderers={{
+                        enable_data_sharing: (value: boolean, row: any) => (
+                          <label className="inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={value || false}
+                              onChange={async (e) => {
+                                const newValue = e.target.checked;
+                                try {
+                                  await apiCall(
+                                    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update_organizations`,
+                                    {
+                                      method: 'PUT',
+                                      body: {
+                                        id: row.id,
+                                        enable_data_sharing: newValue
+                                      }
+                                    }
+                                  );
+                                  setOrgRefreshKey(prev => prev + 1);
+                                } catch (err) {
+                                  console.error('Failed to update organization:', err);
+                                }
+                              }}
+                              className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
+                            />
+                            <span className="ml-2 text-sm text-gray-700">
+                              {value ? 'Enabled' : 'Disabled'}
+                            </span>
+                          </label>
+                        )
+                      }}
+                      searchable={true}
+                      searchPlaceholder="Search organizations..."
                     />
                   </div>
                 </ApiErrorBoundary>

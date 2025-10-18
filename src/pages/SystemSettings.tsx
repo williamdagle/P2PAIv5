@@ -6,7 +6,7 @@ import Layout from '../components/Layout';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import FormField from '../components/FormField';
-import { Settings, Clock, Shield, Bell, Database, Activity, AlertCircle, Share2 } from 'lucide-react';
+import { Settings, Clock, Shield, Bell, Database, Activity, AlertCircle } from 'lucide-react';
 
 interface SystemSettingsProps {
   onNavigate: (page: string) => void;
@@ -51,17 +51,11 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ onNavigate }) => {
   const [userRole, setUserRole] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'appointments' | 'security' | 'notifications' | 'data' | 'features'>('appointments');
   const [settings, setSettings] = useState<SystemSettingsData | null>(null);
-  const [organizations, setOrganizations] = useState<any[]>([]);
-  const [orgRefreshKey, setOrgRefreshKey] = useState(0);
 
   useEffect(() => {
     loadUserRole();
     loadSettings();
   }, []);
-
-  useEffect(() => {
-    loadOrganizations();
-  }, [orgRefreshKey]);
 
   const loadUserRole = async () => {
     try {
@@ -91,57 +85,6 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ onNavigate }) => {
       showError('Failed to load system settings');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadOrganizations = async () => {
-    try {
-      const response = await apiCall<any[]>(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get_organizations`,
-        { method: 'GET' }
-      );
-      if (response) {
-        setOrganizations(response);
-      }
-    } catch (err) {
-      console.error('Failed to load organizations:', err);
-    }
-  };
-
-  const handleToggleOrgSharing = async (orgId: string, currentValue: boolean) => {
-    const newValue = !currentValue;
-
-    // Optimistic update
-    setOrganizations(prev =>
-      prev.map(org =>
-        org.id === orgId
-          ? { ...org, enable_data_sharing: newValue }
-          : org
-      )
-    );
-
-    try {
-      await apiCall(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update_organizations`,
-        {
-          method: 'PUT',
-          body: {
-            id: orgId,
-            enable_data_sharing: newValue
-          }
-        }
-      );
-      showSuccess(`Data sharing ${newValue ? 'enabled' : 'disabled'}`);
-    } catch (err) {
-      // Revert on error
-      setOrganizations(prev =>
-        prev.map(org =>
-          org.id === orgId
-            ? { ...org, enable_data_sharing: currentValue }
-            : org
-        )
-      );
-      showError('Failed to update organization sharing setting');
     }
   };
 
@@ -621,45 +564,6 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ onNavigate }) => {
                       <p className="text-xs text-gray-500">Notify providers of new results</p>
                     </div>
                   </label>
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                  <div className="flex items-center mb-4">
-                    <Share2 className="w-5 h-5 text-purple-600 mr-2" />
-                    <h4 className="text-md font-semibold text-gray-900">Organization Data Sharing</h4>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Enable data sharing across clinics within the same organization. When enabled, authorized users can access patient data from any clinic in the organization.
-                  </p>
-
-                  {organizations.length > 0 ? (
-                    <div className="space-y-3">
-                      {organizations.map((org) => (
-                        <div
-                          key={org.id}
-                          className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white"
-                        >
-                          <div>
-                            <p className="font-medium text-gray-900">{org.name}</p>
-                            <p className="text-xs text-gray-500">Org ID: {org.org_id}</p>
-                          </div>
-                          <label className="inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={org.enable_data_sharing || false}
-                              onChange={() => handleToggleOrgSharing(org.id, org.enable_data_sharing)}
-                              className="w-5 h-5 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
-                            />
-                            <span className="ml-2 text-sm font-medium text-gray-700">
-                              {org.enable_data_sharing ? 'Enabled' : 'Disabled'}
-                            </span>
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic">No organizations configured</p>
-                  )}
                 </div>
               </div>
             )}
