@@ -9,9 +9,9 @@ export function useApi() {
   const [error, setError] = useState<string | null>(null);
   const { globals, clearGlobals } = useGlobal();
 
-  const apiCall = async <T>(
+  const apiCall = async <T = unknown>(
     url: string,
-    options: RequestInit & { body?: any } = {}
+    options: RequestInit & { body?: unknown } = {}
   ): Promise<T> => {
     console.log('[useApi] API call initiated:', {
       url,
@@ -89,10 +89,11 @@ export function useApi() {
 
       return jsonResponse as T;
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       const totalTime = Date.now() - requestStartTime;
       console.error('[useApi] Request failed after', totalTime, 'ms:', err);
-      setError(err.message);
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
@@ -100,7 +101,7 @@ export function useApi() {
     }
   };
 
-  const logAuditForOperation = async (url: string, method: string, response: any) => {
+  const logAuditForOperation = async (url: string, method: string, response: unknown) => {
     try {
       const endpoint = url.split('/functions/v1/')[1]?.split('?')[0] || '';
 
@@ -189,15 +190,15 @@ export function useApi() {
     }
   };
 
-  const apiCallLegacy = async <T>(
+  const apiCallLegacy = async <T = unknown>(
     endpoint: string,
     method: string = 'GET',
-    body?: any
+    body?: unknown
   ): Promise<T> => {
     const baseUrl = import.meta.env.VITE_SUPABASE_URL;
     const url = `${baseUrl}/functions/v1/${endpoint}`;
 
-    const options: RequestInit & { body?: any } = {
+    const options: RequestInit & { body?: unknown } = {
       method,
       body: body || undefined
     };

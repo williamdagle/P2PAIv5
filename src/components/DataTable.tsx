@@ -6,21 +6,21 @@ import { validateDataClinicIds, filterDataByClinic } from '../utils/patientLooku
 import Button from './Button';
 import ApiErrorBoundary from './ApiErrorBoundary';
 
-interface DataTableProps {
+interface DataTableProps<T = Record<string, unknown>> {
   apiUrl: string;
   columns: string[];
-  onRowClick?: (row: any) => void;
-  onEdit?: (row: any) => void;
-  onDelete?: (row: any) => void;
+  onRowClick?: (row: T) => void;
+  onEdit?: (row: T) => void;
+  onDelete?: (row: T) => void;
   showActions?: boolean;
   searchable?: boolean;
   searchPlaceholder?: string;
   className?: string;
-  customRenderers?: Record<string, (value: any, row?: any) => React.ReactNode>;
-  actionButtons?: (row: any) => React.ReactNode;
+  customRenderers?: Record<string, (value: unknown, row: T) => React.ReactNode>;
+  actionButtons?: (row: T) => React.ReactNode;
 }
 
-const DataTable: React.FC<DataTableProps> = ({
+function DataTable<T = Record<string, unknown>>({
   apiUrl,
   columns,
   onRowClick,
@@ -32,9 +32,9 @@ const DataTable: React.FC<DataTableProps> = ({
   className = '',
   customRenderers,
   actionButtons
-}) => {
-  const [data, setData] = useState<any[]>([]);
-  const [filteredData, setFilteredData] = useState<any[]>([]);
+}: DataTableProps<T>) {
+  const [data, setData] = useState<T[]>([]);
+  const [filteredData, setFilteredData] = useState<T[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [apiError, setApiError] = useState<string>('');
   const [isInitialized, setIsInitialized] = useState(false);
@@ -84,7 +84,7 @@ const DataTable: React.FC<DataTableProps> = ({
       setIsInitialized(true);
 
       try {
-        const response = await apiCall<any>(apiUrl, { method: 'GET' });
+        const response = await apiCall<Record<string, unknown> | T[]>(apiUrl, { method: 'GET' });
         
         console.log('📨 DataTable received response:', {
           type: typeof response,
@@ -93,7 +93,7 @@ const DataTable: React.FC<DataTableProps> = ({
         });
         
         // Handle successful response
-        let dataArray = [];
+        let dataArray: T[] = [];
         
         if (response && typeof response === 'object') {
           // Check for specific data properties
@@ -103,7 +103,7 @@ const DataTable: React.FC<DataTableProps> = ({
           
           for (const key of dataKeys) {
             if (response[key] && Array.isArray(response[key])) {
-              dataArray = response[key];
+              dataArray = response[key] as T[];
               console.log(`✅ Found data in ${key}:`, {
                 count: dataArray.length,
                 firstItem: dataArray[0] ? {
@@ -118,7 +118,7 @@ const DataTable: React.FC<DataTableProps> = ({
           
           // If no specific key found, check if response itself is an array
           if (dataArray.length === 0 && Array.isArray(response)) {
-            dataArray = response;
+            dataArray = response as T[];
             console.log('✅ Using response as array:', {
               count: dataArray.length,
               firstItem: dataArray[0] ? {
@@ -358,6 +358,6 @@ const DataTable: React.FC<DataTableProps> = ({
       </div>
     </ApiErrorBoundary>
   );
-};
+}
 
-export default DataTable;
+export default DataTable as <T = Record<string, unknown>>(props: DataTableProps<T>) => JSX.Element;

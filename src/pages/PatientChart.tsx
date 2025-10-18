@@ -3,6 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
+import {
+  Patient,
+  ChartSummaryData,
+  VitalSign,
+  PatientAllergy,
+  PatientImmunization,
+  PhysicalExam,
+  ChiefComplaint,
+  HPI,
+  ROS,
+  ProblemListItem,
+  Medication,
+  Supplement,
+  Lab,
+  TreatmentPlan
+} from '../types';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import VitalSignsForm from '../components/VitalSignsForm';
@@ -42,22 +58,22 @@ const PatientChart: React.FC = () => {
   const { showError, showSuccess } = useNotification();
   const { apiCall } = useApi();
   const [loading, setLoading] = useState(true);
-  const [patientData, setPatientData] = useState<any>(null);
+  const [patientData, setPatientData] = useState<Patient | null>(null);
   const [activeSection, setActiveSection] = useState<string>('overview');
-  const [chartSummary, setChartSummary] = useState<any>(null);
-  const [vitalSigns, setVitalSigns] = useState<any[]>([]);
-  const [allergies, setAllergies] = useState<any[]>([]);
-  const [immunizations, setImmunizations] = useState<any[]>([]);
-  const [physicalExams, setPhysicalExams] = useState<any[]>([]);
-  const [chiefComplaints, setChiefComplaints] = useState<any[]>([]);
-  const [hpiRecords, setHpiRecords] = useState<any[]>([]);
-  const [rosRecords, setRosRecords] = useState<any[]>([]);
-  const [problems, setProblems] = useState<any[]>([]);
-  const [medications, setMedications] = useState<any[]>([]);
-  const [supplements, setSupplements] = useState<any[]>([]);
-  const [labs, setLabs] = useState<any[]>([]);
-  const [labResults, setLabResults] = useState<any[]>([]);
-  const [treatmentPlans, setTreatmentPlans] = useState<any[]>([]);
+  const [chartSummary, setChartSummary] = useState<ChartSummaryData | null>(null);
+  const [vitalSigns, setVitalSigns] = useState<VitalSign[]>([]);
+  const [allergies, setAllergies] = useState<PatientAllergy[]>([]);
+  const [immunizations, setImmunizations] = useState<PatientImmunization[]>([]);
+  const [physicalExams, setPhysicalExams] = useState<PhysicalExam[]>([]);
+  const [chiefComplaints, setChiefComplaints] = useState<ChiefComplaint[]>([]);
+  const [hpiRecords, setHpiRecords] = useState<HPI[]>([]);
+  const [rosRecords, setRosRecords] = useState<ROS[]>([]);
+  const [problems, setProblems] = useState<ProblemListItem[]>([]);
+  const [medications, setMedications] = useState<Medication[]>([]);
+  const [supplements, setSupplements] = useState<Supplement[]>([]);
+  const [labs, setLabs] = useState<Lab[]>([]);
+  const [labResults, setLabResults] = useState<Lab[]>([]);
+  const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
   const [sectionLoading, setSectionLoading] = useState<Record<string, boolean>>({});
   const [loadedSections, setLoadedSections] = useState<Set<string>>(new Set(['overview']));
 
@@ -111,8 +127,9 @@ const PatientChart: React.FC = () => {
       setAllergies(summary.allergies || []);
       setProblems(summary.problems || []);
       setMedications(summary.medications || []);
-    } catch (err: any) {
-      showError('Failed to load chart summary', err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      showError('Failed to load chart summary', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -243,8 +260,9 @@ const PatientChart: React.FC = () => {
       }
 
       setLoadedSections(prev => new Set([...prev, section]));
-    } catch (err: any) {
-      showError(`Failed to load ${section} data`, err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      showError(`Failed to load ${section} data`, errorMessage);
     } finally {
       setSectionLoading(prev => ({ ...prev, [section]: false }));
     }

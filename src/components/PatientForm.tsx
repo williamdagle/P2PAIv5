@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useApi } from '../hooks/useApi';
 import { useGlobal } from '../context/GlobalContext';
+import { Patient } from '../types';
 import Button from './Button';
 import FormField from './FormField';
 
 interface PatientFormProps {
-  patient?: any;
+  patient?: Patient;
   onSuccess: () => void;
   onCancel: () => void;
 }

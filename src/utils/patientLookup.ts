@@ -1,9 +1,11 @@
+import { Patient, User } from '../types';
+
 /**
  * Enhanced patient lookup utilities for consistent patient-user relationships
  */
 
 export interface PatientLookupResult {
-  patient: any | null;
+  patient: Patient | null;
   strategy: 'name_match' | 'creator_match' | 'clinic_fallback' | 'none';
   confidence: 'high' | 'medium' | 'low';
 }
@@ -12,8 +14,8 @@ export interface PatientLookupResult {
  * Find the current user's patient record using multiple fallback strategies
  */
 export function findUserPatient(
-  patients: any[], 
-  user: any, 
+  patients: Patient[],
+  user: User,
   componentName: string = 'Unknown'
 ): PatientLookupResult {
   console.log(`🔍 Debug ${componentName} - Starting patient lookup:`, {
@@ -87,7 +89,7 @@ export function findUserPatient(
 /**
  * Validate that data items have required clinic_id for filtering
  */
-export function validateDataClinicIds(data: any[], componentName: string = 'Unknown'): boolean {
+export function validateDataClinicIds<T extends { clinic_id?: string; id?: string }>(data: T[], componentName: string = 'Unknown'): boolean {
   const itemsWithoutClinicId = data.filter(item => !item.clinic_id);
   
   if (itemsWithoutClinicId.length > 0) {
@@ -104,11 +106,11 @@ export function validateDataClinicIds(data: any[], componentName: string = 'Unkn
 /**
  * Filter data by clinic and log the results
  */
-export function filterDataByClinic(
-  data: any[], 
-  clinicId: string, 
+export function filterDataByClinic<T extends { clinic_id?: string }>(
+  data: T[],
+  clinicId: string,
   componentName: string = 'Unknown'
-): any[] {
+): T[] {
   const filtered = data.filter(item => item.clinic_id === clinicId);
   
   console.log(`🔍 ${componentName} - Clinic filtering results:`, {

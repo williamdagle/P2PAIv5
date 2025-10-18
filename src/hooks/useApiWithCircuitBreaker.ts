@@ -64,9 +64,9 @@ export function useApiWithCircuitBreaker() {
     }));
   }, []);
 
-  const apiCall = async <T>(
+  const apiCall = async <T = unknown>(
     url: string,
-    options: RequestInit & { body?: any } = {}
+    options: RequestInit & { body?: unknown } = {}
   ): Promise<T> => {
     if (!url || typeof url !== 'string') {
       throw new Error('Invalid API URL provided');
@@ -174,12 +174,17 @@ export function useApiWithCircuitBreaker() {
 
       return jsonResponse as T;
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(`API call failed for ${endpoint}:`, err);
-      console.log('🔍 Error type:', err.constructor.name);
-      console.log('🔍 Error message:', err.message);
+      if (err instanceof Error) {
+        console.log('🔍 Error type:', err.constructor.name);
+        console.log('🔍 Error message:', err.message);
+        setError(err.message);
+      } else {
+        console.log('🔍 Unknown error type');
+        setError('An unknown error occurred');
+      }
       recordFailure(endpoint);
-      setError(err.message);
       throw err;
     } finally {
       setLoading(false);
@@ -197,7 +202,7 @@ export function useApiWithCircuitBreaker() {
     return circuitBreakers[endpoint] || { failures: 0, lastFailure: 0, isOpen: false };
   }, [circuitBreakers]);
 
-  const logAuditForOperation = async (url: string, method: string, response: any) => {
+  const logAuditForOperation = async (url: string, method: string, response: unknown) => {
     try {
       const endpoint = url.split('/functions/v1/')[1]?.split('?')[0] || '';
 

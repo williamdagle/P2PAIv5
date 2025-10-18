@@ -348,12 +348,186 @@ export interface SelectOption {
   label: string;
 }
 
-export interface TableColumn {
+export interface TableColumn<T = Record<string, unknown>> {
   key: string;
   label: string;
   sortable?: boolean;
   filterable?: boolean;
-  render?: (value: unknown, row: Record<string, unknown>) => React.ReactNode;
+  render?: (value: unknown, row: T) => React.ReactNode;
+}
+
+export type EntityType = Patient | Appointment | TreatmentPlan | TimelineEvent | Lab | Medication | Supplement | User | Clinic | Organization | ClinicalNote | Task;
+
+export type FormFieldValue = string | number | boolean | Date | string[] | null | undefined;
+
+export interface GenericFormProps<T> {
+  initialData?: Partial<T>;
+  onSubmit: (data: T) => void | Promise<void>;
+  onCancel: () => void;
+}
+
+export interface ChartSummaryData {
+  patient: { name: string };
+  vitalSigns: VitalSign[];
+  allergies: PatientAllergy[];
+  problems: ProblemListItem[];
+  medications: Medication[];
+  supplements?: Supplement[];
+  recentActivity: RecentActivityItem[];
+  completeness?: ChartCompletenessItem[];
+}
+
+export interface RecentActivityItem {
+  id: string;
+  date: string;
+  type: string;
+  description: string;
+  provider?: string;
+}
+
+export interface ChartCompletenessItem {
+  section: string;
+  completed: boolean;
+  lastUpdated?: string;
+}
+
+export interface VitalSign {
+  id: string;
+  clinic_id: string;
+  patient_id: string;
+  recorded_at: string;
+  blood_pressure_systolic?: number;
+  blood_pressure_diastolic?: number;
+  heart_rate_bpm?: number;
+  temperature_c?: number;
+  temperature_f?: number;
+  oxygen_saturation?: number;
+  respiratory_rate?: number;
+  weight_kg?: number;
+  weight_lbs?: number;
+  height_cm?: number;
+  height_inches?: number;
+  bmi?: number;
+  notes?: string;
+  recorded_by?: string;
+  recorder?: { full_name: string };
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PatientAllergy {
+  id: string;
+  clinic_id: string;
+  patient_id: string;
+  allergen: string;
+  allergen_type: 'medication' | 'food' | 'environmental' | 'other';
+  severity: 'mild' | 'moderate' | 'severe' | 'life-threatening';
+  reaction: string;
+  onset_date?: string;
+  notes?: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PatientImmunization {
+  id: string;
+  clinic_id: string;
+  patient_id: string;
+  vaccine_name: string;
+  administration_date: string;
+  dose_number?: number;
+  administration_site?: string;
+  lot_number?: string;
+  manufacturer?: string;
+  administered_by?: string;
+  administrator?: { full_name: string };
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PhysicalExam {
+  id: string;
+  clinic_id: string;
+  patient_id: string;
+  exam_date: string;
+  examiner_id?: string;
+  examiner?: { full_name: string };
+  summary?: string;
+  general_appearance?: string;
+  cardiovascular?: string;
+  respiratory?: string;
+  gastrointestinal?: string;
+  neurological?: string;
+  musculoskeletal?: string;
+  skin?: string;
+  heent?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ChiefComplaint {
+  id: string;
+  clinic_id: string;
+  patient_id: string;
+  visit_date: string;
+  complaint: string;
+  duration?: string;
+  severity?: 'mild' | 'moderate' | 'severe';
+  associated_symptoms?: string[];
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface HPI {
+  id: string;
+  clinic_id: string;
+  patient_id: string;
+  visit_date: string;
+  chief_complaint_id?: string;
+  chief_complaint?: { complaint: string };
+  narrative?: string;
+  onset?: string;
+  location?: string;
+  duration?: string;
+  character?: string;
+  aggravating_factors?: string;
+  relieving_factors?: string;
+  timing?: string;
+  severity_scale?: number;
+  context?: string;
+  associated_signs_symptoms?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ROS {
+  id: string;
+  clinic_id: string;
+  patient_id: string;
+  visit_date: string;
+  all_systems_negative: boolean;
+  [key: string]: string | boolean | undefined;
+  general_notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ProblemListItem {
+  id: string;
+  clinic_id: string;
+  patient_id: string;
+  problem_name: string;
+  icd10_code?: string;
+  status: 'active' | 'resolved' | 'chronic' | 'inactive';
+  onset_date?: string;
+  resolution_date?: string;
+  severity?: 'mild' | 'moderate' | 'severe';
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface AestheticTreatment {
