@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useGlobal } from '../context/GlobalContext';
+import { usePatient } from '../context/PatientContext';
 import { supabase } from '../lib/supabase';
-import { auditLogger } from '../utils/auditLogger';
+import debug from '../utils/debug';
 import Button from '../components/Button';
 import FormField from '../components/FormField';
 
@@ -48,12 +48,11 @@ const Login: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
-  const { setGlobal } = useGlobal();
+  const { clearSelectedPatient } = usePatient();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get the redirect path from location state (where user tried to go before login)
-  const from = (location.state as any)?.from?.pathname || '/dashboard';
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,97 +87,25 @@ const Login: React.FC = () => {
       }
 
       if (data.user && data.session) {
-        const { data: profile, error: profileError } = await supabase
-          .from('users')
-          .select('clinic_id, full_name, clinics(feature_flags, aesthetics_module_enabled)')
-          .eq('auth_user_id', data.user.id)
-          .single();
-
-
-        if (profileError) {
-          await logAuthEvent({
-            email,
-            auth_user_id: data.user.id,
-            event_type: 'login_failure',
-            failure_reason: 'Profile load failed'
-          });
-          setErrors({ submit: 'Failed to load user profile. Please contact support.' });
-          await supabase.auth.signOut();
-          return;
-        }
-
-        if (!profile?.clinic_id) {
-          await logAuthEvent({
-            email,
-            auth_user_id: data.user.id,
-            event_type: 'login_failure',
-            failure_reason: 'Profile incomplete - missing clinic_id'
-          });
-          setErrors({ submit: 'User profile incomplete. Please contact support to complete setup.' });
-          await supabase.auth.signOut();
-          return;
-        }
-
-        const newSessionId = crypto.randomUUID();
-
         await logAuthEvent({
           email,
           auth_user_id: data.user.id,
-          event_type: 'login_success',
-          session_id: newSessionId
+          event_type: 'login_success'
         });
 
-        const { data: userProfile } = await supabase
-          .from('users')
-          .select('id')
-          .eq('auth_user_id', data.user.id)
-          .maybeSingle();
-
-        // Initialize audit logger
-        auditLogger.setCredentials(
-          data.session.access_token,
-          profile.clinic_id,
-          userProfile?.id || '',
-          newSessionId
-        );
-
-        // Start user session
-        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log_user_session`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${data.session.access_token}`,
-            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
-          },
-          body: JSON.stringify({
-            action: 'start',
-            session_id: newSessionId,
-            user_id: userProfile?.id,
-            clinic_id: profile.clinic_id,
-            user_agent: navigator.userAgent
-          })
-        }).catch(err => console.warn('Failed to start session:', err));
-
-        const clinicData = (profile as any).clinics;
-        const aestheticsEnabled = clinicData?.feature_flags?.aesthetics ?? clinicData?.aesthetics_module_enabled ?? false;
-        console.log('[Login] Setting aesthetics_module_enabled:', aestheticsEnabled);
-
-        setGlobal('access_token', data.session.access_token);
-        setGlobal('user_id', data.user.id);
-        setGlobal('clinic_id', profile.clinic_id);
-        setGlobal('aesthetics_module_enabled', aestheticsEnabled);
-
-        // Navigate to intended page or dashboard
+        debug.log('Login successful, session managed by Supabase');
+        clearSelectedPatient();
         navigate(from, { replace: true });
       } else {
         setErrors({ submit: 'Login failed. No user session created.' });
       }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       await logAuthEvent({
         email,
         event_type: 'login_failure',
-        failure_reason: err.message || 'Unknown error'
+        failure_reason: errorMessage
       });
       setErrors({ submit: 'Login failed. Please try again.' });
     } finally {

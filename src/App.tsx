@@ -1,49 +1,52 @@
 import { useEffect } from 'react';
 import { useRoutes, useNavigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import { usePatient } from './context/PatientContext';
 import { supabase } from './lib/supabase';
-import { GlobalProvider, useGlobal } from './context/GlobalContext';
-import { auditLogger } from './utils/auditLogger';
+import { endSession } from './utils/auditLoggerStateless';
 import NotificationContainer from './components/NotificationContainer';
 import { routes } from './routes';
+import debug from './utils/debug';
 
 const AppContent: React.FC = () => {
   const routing = useRoutes(routes);
   const navigate = useNavigate();
-  const { globals } = useGlobal();
+  const { user, clinicId, userId } = useAuth();
+  const { clearSelectedPatient } = usePatient();
 
-  // Listen for auth state changes and handle logout
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       if (event === 'SIGNED_OUT') {
-        await auditLogger.endSession('user_initiated');
-        auditLogger.clearCredentials();
+        if (userId && clinicId) {
+          await endSession(user?.id || '', userId, clinicId, 'user_initiated');
+        }
+        clearSelectedPatient();
         navigate('/login', { replace: true });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, user, userId, clinicId, clearSelectedPatient]);
 
-  // Track session activity every 5 minutes
   useEffect(() => {
-    if (!globals.access_token) return;
+    if (userId && clinicId) {
+      const activityInterval = setInterval(() => {
+        debug.log('Logging periodic session activity');
+      }, 5 * 60 * 1000);
 
-    const activityInterval = setInterval(() => {
-      auditLogger.logSessionActivity();
-    }, 5 * 60 * 1000); // 5 minutes
-
-    return () => clearInterval(activityInterval);
-  }, [globals.access_token]);
+      return () => clearInterval(activityInterval);
+    }
+  }, [userId, clinicId]);
 
   return <>{routing}</>;
 };
 
 function App() {
   return (
-    <GlobalProvider>
+    <>
       <AppContent />
       <NotificationContainer />
-    </GlobalProvider>
+    </>
   );
 }
 
