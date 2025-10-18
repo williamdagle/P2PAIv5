@@ -2,24 +2,25 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { auditLogger } from '../utils/auditLogger';
-import { useGlobal } from '../context/GlobalContext';
+import { useAuth } from '../context/AuthContext';
 
 const AppLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { globals } = useGlobal();
+  const { getAccessToken, clinicId, userId } = useAuth();
 
   // Log navigation for compliance/auditing
   useEffect(() => {
     const logNavigation = async () => {
-      if (!globals.access_token || !globals.clinic_id) return;
+      const accessToken = getAccessToken();
+      if (!accessToken || !clinicId) return;
 
       try {
         await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log_audit_event`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${globals.access_token}`,
+            'Authorization': `Bearer ${accessToken}`,
             'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
           },
           body: JSON.stringify({
@@ -34,8 +35,8 @@ const AppLayout: React.FC = () => {
               timestamp: new Date().toISOString()
             },
             phi_accessed: false,
-            clinic_id: globals.clinic_id,
-            user_id: globals.user_id
+            clinic_id: clinicId,
+            user_id: userId
           })
         }).catch(err => console.debug('Navigation audit log failed:', err));
       } catch (error) {
@@ -44,7 +45,7 @@ const AppLayout: React.FC = () => {
     };
 
     logNavigation();
-  }, [location.pathname, location.search, globals.access_token, globals.clinic_id, globals.user_id]);
+  }, [location.pathname, location.search, getAccessToken, clinicId, userId]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">

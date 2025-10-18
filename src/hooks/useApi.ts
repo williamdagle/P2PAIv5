@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGlobal } from '../context/GlobalContext';
+import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { auditLogger } from '../utils/auditLogger';
 
@@ -7,7 +7,7 @@ import { auditLogger } from '../utils/auditLogger';
 export function useApi() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { globals, clearGlobals } = useGlobal();
+  const { getAccessToken, signOut } = useAuth();
 
   const apiCall = async <T = unknown>(
     url: string,
@@ -32,8 +32,9 @@ export function useApi() {
       };
 
       // For migration endpoints, we need to use service role or handle auth differently
-      if (globals.access_token) {
-        headers['Authorization'] = `Bearer ${globals.access_token}`;
+      const accessToken = getAccessToken();
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
       }
 
       // For migration endpoints, always add the anon key
@@ -56,9 +57,7 @@ export function useApi() {
       if (response.status === 401) {
         // Don't auto-logout for migration endpoints
         if (!url.includes('/migrate_users') && !url.includes('/reset_user_password')) {
-          await supabase.auth.signOut();
-          clearGlobals();
-          window.location.reload();
+          await signOut();
           throw new Error('Authentication expired. Please sign in again.');
         } else {
           const errorText = await response.text();

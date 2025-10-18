@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useGlobal } from '../context/GlobalContext';
+import { usePatient } from '../context/PatientContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
 import DataTable from '../components/DataTable';
@@ -13,7 +13,7 @@ import { Plus } from 'lucide-react';
 
 const Patients: React.FC = () => {
   const navigate = useNavigate();
-  const { setGlobal } = useGlobal();
+  const { setSelectedPatient } = usePatient();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
   const [showForm, setShowForm] = useState(false);
@@ -31,8 +31,7 @@ const Patients: React.FC = () => {
 
   const handleRowClick = (row: any) => {
     console.log('👤 Patient selected:', row);
-    setGlobal('selected_patient_id', row.id);
-    setGlobal('selected_patient_name', `${row.first_name} ${row.last_name}`);
+    setSelectedPatient(row.id, `${row.first_name} ${row.last_name}`);
     navigate(`/patients/${row.id}/chart`);
   };
 

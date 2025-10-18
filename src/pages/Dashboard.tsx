@@ -1,13 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGlobal } from '../context/GlobalContext';
+import { usePatient } from '../context/PatientContext';
 import Button from '../components/Button';
 import SystemStatus from '../components/SystemStatus';
 import { Users, Calendar, Activity, BarChart3 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { globals } = useGlobal();
+  const { selectedPatientId } = usePatient();
 
   const quickActions = [
     {
@@ -23,7 +23,7 @@ const Dashboard: React.FC = () => {
       icon: Calendar,
       action: () => navigate('/appointments'),
       color: 'bg-green-500',
-      disabled: !globals.selected_patient_id
+      disabled: !selectedPatientId
     },
     {
       title: 'Treatment Plans',
@@ -31,7 +31,7 @@ const Dashboard: React.FC = () => {
       icon: Activity,
       action: () => navigate('/treatment-plans'),
       color: 'bg-purple-500',
-      disabled: !globals.selected_patient_id
+      disabled: !selectedPatientId
     },
     {
       title: 'Analytics',

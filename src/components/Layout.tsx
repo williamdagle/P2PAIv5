@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { useGlobal } from '../context/GlobalContext';
+import { useAuth } from '../context/AuthContext';
 
 interface LayoutProps {
   children: ReactNode;
@@ -7,9 +7,9 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, showSidebar = true }) => {
-  const { globals } = useGlobal();
+  const { isAuthenticated } = useAuth();
 
-  if (!globals.access_token && showSidebar) {
+  if (!isAuthenticated && showSidebar) {
     return (
       <div className="min-h-screen bg-gray-50">
         {children}

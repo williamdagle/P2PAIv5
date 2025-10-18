@@ -1,10 +1,10 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useGlobal } from '../context/GlobalContext';
+import { useClinic } from '../context/ClinicContext';
 
 const AestheticsRoute: React.FC = () => {
-  const { globals } = useGlobal();
+  const { aestheticsEnabled } = useClinic();
 
-  if (!globals.aesthetics_module_enabled) {
+  if (!aestheticsEnabled) {
     return <Navigate to="/dashboard" replace />;
   }
 

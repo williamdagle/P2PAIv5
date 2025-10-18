@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { NavLink, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Users, Calendar, Activity, FlaskConical, Pill, Cable as Capsule, Settings, Home, UserCheck, CalendarDays, FileText, Wrench, ClipboardCheck, CheckSquare, Stethoscope, HeartPulse, ClipboardList, TestTube, Shield, FileDown, FolderOpen, Menu, X, Sparkles, Camera, DollarSign, Package, CreditCard, TrendingUp, ChevronDown, ChevronRight, Building2, UserPlus, File as FileEdit, MapPin } from 'lucide-react';
-import { useGlobal } from '../context/GlobalContext';
+import { useAuth } from '../context/AuthContext';
+import { usePatient } from '../context/PatientContext';
 import { supabase } from '../lib/supabase';
 import { auditLogger } from '../utils/auditLogger';
 
 const Sidebar: React.FC = () => {
-  const { globals, clearGlobals } = useGlobal();
+  const { getAccessToken, signOut } = useAuth();
+  const { selectedPatientId } = usePatient();
   const navigate = useNavigate();
   const location = useLocation();
   const { patientId } = useParams();
@@ -23,7 +25,7 @@ const Sidebar: React.FC = () => {
   const navRef = useRef<HTMLDivElement>(null);
   const scrollPositionRef = useRef<number>(0);
 
-  const selectedPatient = globals.selected_patient_id || patientId;
+  const selectedPatient = selectedPatientId || patientId;
 
   const handleSignOut = async () => {
     try {
@@ -31,7 +33,7 @@ const Sidebar: React.FC = () => {
 
       await auditLogger.endSession('user_initiated');
 
-      if (session && globals.access_token) {
+      if (session) {
         await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log_authentication_event`, {
           method: 'POST',
           headers: {
@@ -54,8 +56,7 @@ const Sidebar: React.FC = () => {
     }
 
     auditLogger.clearCredentials();
-    await supabase.auth.signOut();
-    clearGlobals();
+    await signOut();
   };
 
   const clinicalSections = {

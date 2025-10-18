@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useGlobal } from '../context/GlobalContext';
+import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { auditLogger } from '../utils/auditLogger';
 
@@ -18,7 +18,7 @@ export function useApiWithCircuitBreaker() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [circuitBreakers, setCircuitBreakers] = useState<CircuitBreakerState>({});
-  const { globals, clearGlobals } = useGlobal();
+  const { getAccessToken, signOut } = useAuth();
 
   const isCircuitOpen = useCallback((endpoint: string): boolean => {
     const breaker = circuitBreakers[endpoint];
@@ -74,10 +74,11 @@ export function useApiWithCircuitBreaker() {
 
     const endpoint = url.split('/functions/v1/')[1]?.split('?')[0] || url;
 
+    const accessToken = getAccessToken();
     console.log('🌐 Making API call to:', url);
     console.log('🔧 Request options:', {
       method: options.method || 'GET',
-      hasAuth: !!globals.access_token,
+      hasAuth: !!accessToken,
       hasBody: !!options.body
     });
     
@@ -96,9 +97,9 @@ export function useApiWithCircuitBreaker() {
         ...(options.headers || {}),
       };
 
-      if (globals.access_token) {
-        headers['Authorization'] = `Bearer ${globals.access_token}`;
-        console.log('🔑 Added auth header with token:', globals.access_token.substring(0, 20) + '...');
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+        console.log('🔑 Added auth header with token:', accessToken.substring(0, 20) + '...');
       }
       
       // For migration endpoints
@@ -125,9 +126,7 @@ export function useApiWithCircuitBreaker() {
       if (response.status === 401) {
         console.log('🚫 Unauthorized response - signing out');
         if (!url.includes('/migrate_users') && !url.includes('/reset_user_password')) {
-          await supabase.auth.signOut();
-          clearGlobals();
-          window.location.reload();
+          await signOut();
           throw new Error('Authentication expired. Please sign in again.');
         } else {
           const errorText = await response.text();
