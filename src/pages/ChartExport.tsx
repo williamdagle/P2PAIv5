@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FileDown, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
-import Layout from '../components/Layout';
-import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import ChartExportForm from '../components/ChartExportForm';
 
-interface ChartExportProps {
-  onNavigate: (page: string) => void;
-}
-
-const ChartExport: React.FC<ChartExportProps> = ({ onNavigate }) => {
+const ChartExport: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useGlobal();
   const { addNotification } = useNotification();
   const [exports, setExports] = useState<any[]>([]);
@@ -109,10 +105,7 @@ const ChartExport: React.FC<ChartExportProps> = ({ onNavigate }) => {
   }
 
   return (
-    <Layout>
-      <Sidebar currentPage="ChartExport" onPageChange={onNavigate} />
-
-      <div className="space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
@@ -256,8 +249,7 @@ const ChartExport: React.FC<ChartExportProps> = ({ onNavigate }) => {
           onCancel={() => setShowExportModal(false)}
         />
       </Modal>
-      </div>
-    </Layout>
+    </div>
   );
 };
 
