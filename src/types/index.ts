@@ -7,13 +7,7 @@ export interface NotificationData {
 }
 
 export interface GlobalState {
-  access_token: string;
-  user_id: string;
-  clinic_id: string;
-  selected_patient_id: string;
-  selected_patient_name: string;
   pending_appointment_edit?: Appointment;
-  aesthetics_module_enabled?: boolean;
   notifications: NotificationData[];
 }
 

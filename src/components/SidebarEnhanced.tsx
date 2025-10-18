@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Calendar, Activity, FlaskConical, Pill, Cable as Capsule, Settings, Home, UserCheck, CalendarDays, FileText, Wrench, ClipboardCheck, CheckSquare, Stethoscope, HeartPulse, ClipboardList, TestTube, Shield, FileDown, FolderOpen, Menu, X } from 'lucide-react';
-import { useGlobal } from '../context/GlobalContext';
+import { useAuth } from '../context/AuthContext';
+import { usePatient } from '../context/PatientContext';
 import { supabase } from '../lib/supabase';
 import { auditLogger } from '../utils/auditLogger';
 
@@ -10,7 +11,8 @@ interface SidebarEnhancedProps {
 }
 
 const SidebarEnhanced: React.FC<SidebarEnhancedProps> = ({ currentPage, onPageChange }) => {
-  const { globals, clearGlobals } = useGlobal();
+  const { getAccessToken, signOut } = useAuth();
+  const { selectedPatientId, selectedPatientName } = usePatient();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
@@ -19,7 +21,7 @@ const SidebarEnhanced: React.FC<SidebarEnhancedProps> = ({ currentPage, onPageCh
 
       await auditLogger.endSession('user_initiated');
 
-      if (session && globals.access_token) {
+      if (session && getAccessToken()) {
         await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log_authentication_event`, {
           method: 'POST',
           headers: {
@@ -42,26 +44,25 @@ const SidebarEnhanced: React.FC<SidebarEnhancedProps> = ({ currentPage, onPageCh
     }
 
     auditLogger.clearCredentials();
-    await supabase.auth.signOut();
-    clearGlobals();
+    await signOut();
     onPageChange?.('Login');
   };
 
   const menuItems = [
     { name: 'Dashboard', icon: Home, page: 'Dashboard' },
     { name: 'Patients', icon: Users, page: 'Patients' },
-    { name: 'Patient Chart', icon: Stethoscope, page: 'PatientChart', disabled: !globals.selected_patient_id },
-    { name: 'Functional Medicine', icon: HeartPulse, page: 'FunctionalMedicine', disabled: !globals.selected_patient_id },
+    { name: 'Patient Chart', icon: Stethoscope, page: 'PatientChart', disabled: !selectedPatientId },
+    { name: 'Functional Medicine', icon: HeartPulse, page: 'FunctionalMedicine', disabled: !selectedPatientId },
     { name: 'Tasks', icon: CheckSquare, page: 'Tasks' },
     { name: 'Provider Calendar', icon: CalendarDays, page: 'ProviderCalendar' },
-    { name: 'Appointments', icon: Calendar, page: 'Appointments', disabled: !globals.selected_patient_id },
+    { name: 'Appointments', icon: Calendar, page: 'Appointments', disabled: !selectedPatientId },
     { name: 'Clinical Assessments', icon: ClipboardList, page: 'ClinicalAssessments' },
     { name: 'Lab Orders', icon: TestTube, page: 'LabOrders' },
-    { name: 'Treatment Plans', icon: Activity, page: 'TreatmentPlans', disabled: !globals.selected_patient_id },
-    { name: 'Clinical Notes', icon: FileText, page: 'ClinicalNotes', disabled: !globals.selected_patient_id },
-    { name: 'Labs', icon: FlaskConical, page: 'Labs', disabled: !globals.selected_patient_id },
-    { name: 'Medications', icon: Pill, page: 'Medications', disabled: !globals.selected_patient_id },
-    { name: 'Supplements', icon: Capsule, page: 'Supplements', disabled: !globals.selected_patient_id },
+    { name: 'Treatment Plans', icon: Activity, page: 'TreatmentPlans', disabled: !selectedPatientId },
+    { name: 'Clinical Notes', icon: FileText, page: 'ClinicalNotes', disabled: !selectedPatientId },
+    { name: 'Labs', icon: FlaskConical, page: 'Labs', disabled: !selectedPatientId },
+    { name: 'Medications', icon: Pill, page: 'Medications', disabled: !selectedPatientId },
+    { name: 'Supplements', icon: Capsule, page: 'Supplements', disabled: !selectedPatientId },
     { name: 'Admin', icon: Settings, page: 'Admin' },
     { name: 'Compliance Reporting', icon: ClipboardCheck, page: 'ComplianceReporting' },
     { name: 'Manage Templates', icon: Wrench, page: 'ManageTemplates' },
@@ -180,10 +181,10 @@ const SidebarEnhanced: React.FC<SidebarEnhancedProps> = ({ currentPage, onPageCh
         </nav>
 
         {/* Footer with selected patient and sign out */}
-        {globals.selected_patient_name ? (
+        {selectedPatientName ? (
           <div className="p-4 border-t border-gray-200 bg-blue-50 flex-shrink-0">
             <p className="text-sm font-medium text-blue-900">Selected Patient:</p>
-            <p className="text-sm text-blue-700 mb-2">{globals.selected_patient_name}</p>
+            <p className="text-sm text-blue-700 mb-2">{selectedPatientName}</p>
             <button
               onClick={handleSignOut}
               className="w-full text-sm text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"

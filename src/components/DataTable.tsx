@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useApiWithCircuitBreaker } from '../hooks/useApiWithCircuitBreaker';
 import { Loader2, CreditCard as Edit, Trash2, Search, X } from 'lucide-react';
-import { useGlobal } from '../context/GlobalContext';
+import { useAuth } from '../context/AuthContext';
+import { usePatient } from '../context/PatientContext';
 import { validateDataClinicIds, filterDataByClinic } from '../utils/patientLookup';
 import Button from './Button';
 import ApiErrorBoundary from './ApiErrorBoundary';
@@ -39,7 +40,8 @@ function DataTable<T = Record<string, unknown>>({
   const [apiError, setApiError] = useState<string>('');
   const [isInitialized, setIsInitialized] = useState(false);
   const { apiCall, loading, error, resetCircuitBreaker } = useApiWithCircuitBreaker();
-  const { globals } = useGlobal();
+  const { getAccessToken, clinicId, userId } = useAuth();
+  const { selectedPatientId } = usePatient();
 
   // Filter data based on search term
   useEffect(() => {
@@ -58,12 +60,13 @@ function DataTable<T = Record<string, unknown>>({
     setFilteredData(filtered);
   }, [data, searchTerm, columns]);
   useEffect(() => {
+    const accessToken = getAccessToken();
     // Prevent infinite loops by checking if we already have data for this URL
-    if (!apiUrl || !globals.access_token) {
+    if (!apiUrl || !accessToken) {
       console.log('⚠️ DataTable: No API URL or access token available', {
         hasApiUrl: !!apiUrl,
-        hasAccessToken: !!globals.access_token,
-        clinicId: globals.clinic_id
+        hasAccessToken: !!accessToken,
+        clinicId: clinicId
       });
       return;
     }
@@ -76,9 +79,9 @@ function DataTable<T = Record<string, unknown>>({
 
     const fetchData = async () => {
       console.log('🚀 DataTable fetching data from:', apiUrl, {
-        clinicId: globals.clinic_id,
-        userId: globals.user_id,
-        selectedPatient: globals.selected_patient_id
+        clinicId: clinicId,
+        userId: userId,
+        selectedPatient: selectedPatientId
       });
       setApiError('');
       setIsInitialized(true);
@@ -134,7 +137,7 @@ function DataTable<T = Record<string, unknown>>({
           totalItems: dataArray.length,
           itemsWithClinicId: dataArray.filter(item => item.clinic_id).length,
           uniqueClinicIds: [...new Set(dataArray.map(item => item.clinic_id))],
-          currentUserClinic: globals.clinic_id,
+          currentUserClinic: clinicId,
           apiUrl: apiUrl
         });
         
@@ -143,7 +146,7 @@ function DataTable<T = Record<string, unknown>>({
           validateDataClinicIds(dataArray, 'DataTable');
           
           // Additional filtering validation
-          const clinicFilteredData = filterDataByClinic(dataArray, globals.clinic_id, 'DataTable');
+          const clinicFilteredData = filterDataByClinic(dataArray, clinicId, 'DataTable');
           
           if (clinicFilteredData.length !== dataArray.length) {
             console.warn('⚠️ DataTable - RLS filtering may not be working correctly:', {
@@ -158,7 +161,7 @@ function DataTable<T = Record<string, unknown>>({
           count: dataArray.length,
           allHaveClinicId: dataArray.every(item => item.clinic_id),
           clinicIds: [...new Set(dataArray.map(item => item.clinic_id))],
-          currentUserClinic: globals.clinic_id
+          currentUserClinic: clinicId
         });
         
         setData(dataArray);
@@ -168,7 +171,7 @@ function DataTable<T = Record<string, unknown>>({
           name: err.constructor.name,
           message: err.message,
           apiUrl: apiUrl,
-          hasAuth: !!globals.access_token
+          hasAuth: !!accessToken
         });
         setApiError(err instanceof Error ? err.message : 'Failed to fetch data');
         setData([]);
@@ -178,11 +181,11 @@ function DataTable<T = Record<string, unknown>>({
 
     console.log('🎯 DataTable useEffect triggered:', {
       url: apiUrl,
-      clinicId: globals.clinic_id,
-      hasAuth: !!globals.access_token
+      clinicId: clinicId,
+      hasAuth: !!accessToken
     });
     fetchData();
-  }, [apiUrl, globals.access_token]); // Removed apiCall from dependencies to prevent infinite loop
+  }, [apiUrl, getAccessToken, clinicId, userId, selectedPatientId]); // Removed apiCall from dependencies to prevent infinite loop
 
   // Reset initialization when URL changes
   useEffect(() => {

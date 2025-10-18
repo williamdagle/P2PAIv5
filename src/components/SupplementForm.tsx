@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApi } from '../hooks/useApi';
-import { useGlobal } from '../context/GlobalContext';
+import { useAuth } from '../context/AuthContext';
+import { usePatient } from '../context/PatientContext';
 import Button from './Button';
 import FormField from './FormField';
 
@@ -26,11 +27,12 @@ const SupplementForm: React.FC<SupplementFormProps> = ({
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [userLoading, setUserLoading] = useState(true);
   const { apiCall, loading, error } = useApi();
-  const { globals } = useGlobal();
+  const { user } = useAuth();
+  const { selectedPatientId } = usePatient();
 
   // Get current user's internal ID
   useEffect(() => {
-    if (currentUserId || !globals.user_id) {
+    if (currentUserId || !user?.id) {
       return;
     }
     
@@ -43,8 +45,8 @@ const SupplementForm: React.FC<SupplementFormProps> = ({
         );
         
         if (response.users) {
-          const currentUser = response.users.find((user: any) => 
-            user.auth_user_id === globals.user_id
+          const currentUser = response.users.find((u: any) =>
+            u.auth_user_id === user?.id
           );
           
           if (currentUser) {
@@ -63,7 +65,7 @@ const SupplementForm: React.FC<SupplementFormProps> = ({
     };
 
     getCurrentUser();
-  }, [globals.user_id, currentUserId, apiCall]);
+  }, [user?.id, currentUserId, apiCall]);
 
   useEffect(() => {
     if (supplement) {
@@ -94,7 +96,7 @@ const SupplementForm: React.FC<SupplementFormProps> = ({
     try {
       const supplementData = {
         ...formData,
-        patient_id: globals.selected_patient_id,
+        patient_id: selectedPatientId,
         recommended_by: currentUserId
       };
 

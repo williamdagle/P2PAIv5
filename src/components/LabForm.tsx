@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApi } from '../hooks/useApi';
-import { useGlobal } from '../context/GlobalContext';
+import { useAuth } from '../context/AuthContext';
+import { usePatient } from '../context/PatientContext';
 import Button from './Button';
 import FormField from './FormField';
 
@@ -25,11 +26,12 @@ const LabForm: React.FC<LabFormProps> = ({
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [userLoading, setUserLoading] = useState(true);
   const { apiCall, loading, error } = useApi();
-  const { globals } = useGlobal();
+  const { user } = useAuth();
+  const { selectedPatientId } = usePatient();
 
   // Get current user's internal ID
   useEffect(() => {
-    if (currentUserId || !globals.user_id) {
+    if (currentUserId || !user?.id) {
       return;
     }
     
@@ -42,8 +44,8 @@ const LabForm: React.FC<LabFormProps> = ({
         );
         
         if (response.users) {
-          const currentUser = response.users.find((user: any) => 
-            user.auth_user_id === globals.user_id
+          const currentUser = response.users.find((u: any) =>
+            u.auth_user_id === user?.id
           );
           
           if (currentUser) {
@@ -62,7 +64,7 @@ const LabForm: React.FC<LabFormProps> = ({
     };
 
     getCurrentUser();
-  }, [globals.user_id, currentUserId, apiCall]);
+  }, [user?.id, currentUserId, apiCall]);
 
   useEffect(() => {
     if (lab) {
@@ -92,7 +94,7 @@ const LabForm: React.FC<LabFormProps> = ({
     try {
       const labData = {
         ...formData,
-        patient_id: globals.selected_patient_id,
+        patient_id: selectedPatientId,
         ordered_by: currentUserId
       };
 

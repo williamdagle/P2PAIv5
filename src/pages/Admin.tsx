@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGlobal } from '../context/GlobalContext';
+import { useAuth } from '../context/AuthContext';
 import { useApi } from '../hooks/useApi';
 import DataTable from '../components/DataTable';
 import ApiErrorBoundary from '../components/ApiErrorBoundary';
@@ -12,7 +12,7 @@ import ClinicForm from '../components/ClinicForm';
 import { Plus, Users, Building2, AlertCircle, Share2 } from 'lucide-react';
 
 const Admin: React.FC = () => {
-  const { globals } = useGlobal();
+  const { getAccessToken, userId, clinicId } = useAuth();
   const { apiCall } = useApi();
   const [showUserModal, setShowUserModal] = useState(false);
   const [showClinicModal, setShowClinicModal] = useState(false);
@@ -126,10 +126,11 @@ const Admin: React.FC = () => {
       }
     };
 
-    if (globals.access_token) {
+    const accessToken = getAccessToken();
+    if (accessToken) {
       fetchUserRole();
     }
-  }, [globals.access_token]);
+  }, [getAccessToken]);
 
   const isAdmin = userRole === 'System Admin';
 
@@ -144,8 +145,8 @@ const Admin: React.FC = () => {
           <div className="bg-white p-4 rounded-lg shadow-md">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Current Session</h3>
             <div className="space-y-2 text-sm">
-              <p><span className="font-medium">User ID:</span> {globals.user_id}</p>
-              <p><span className="font-medium">Clinic ID:</span> {globals.clinic_id}</p>
+              <p><span className="font-medium">User ID:</span> {userId}</p>
+              <p><span className="font-medium">Clinic ID:</span> {clinicId}</p>
             </div>
           </div>
       </div>
@@ -253,7 +254,7 @@ const Admin: React.FC = () => {
                                     }
                                   );
                                   setClinicRefreshKey(prev => prev + 1);
-                                  if (row.id === globals.clinic_id) {
+                                  if (row.id === clinicId) {
                                     window.location.reload();
                                   }
                                 } catch (err) {

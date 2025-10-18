@@ -10,11 +10,6 @@ interface GlobalContextType {
 }
 
 const initialGlobals: GlobalState = {
-  access_token: '',
-  user_id: '',
-  clinic_id: '',
-  selected_patient_id: '',
-  selected_patient_name: '',
   pending_appointment_edit: undefined,
   notifications: []
 };
@@ -30,8 +25,6 @@ export const GlobalProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const clearGlobals = () => {
     setGlobals(initialGlobals);
-    // Clear any stored session data
-    localStorage.removeItem('supabase.auth.token');
   };
 
   const addNotification = useCallback((notification: Omit<NotificationData, 'id'>) => {

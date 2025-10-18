@@ -3,12 +3,14 @@ import { NavLink, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Users, Calendar, Activity, FlaskConical, Pill, Cable as Capsule, Settings, Home, UserCheck, CalendarDays, FileText, Wrench, ClipboardCheck, CheckSquare, Stethoscope, HeartPulse, ClipboardList, TestTube, Shield, FileDown, FolderOpen, Menu, X, Sparkles, Camera, DollarSign, Package, CreditCard, TrendingUp, ChevronDown, ChevronRight, Building2, UserPlus, File as FileEdit, MapPin } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { usePatient } from '../context/PatientContext';
+import { useClinic } from '../context/ClinicContext';
 import { supabase } from '../lib/supabase';
 import { auditLogger } from '../utils/auditLogger';
 
 const Sidebar: React.FC = () => {
   const { getAccessToken, signOut } = useAuth();
-  const { selectedPatientId } = usePatient();
+  const { selectedPatientId, selectedPatientName } = usePatient();
+  const { aestheticsEnabled } = useClinic();
   const navigate = useNavigate();
   const location = useLocation();
   const { patientId } = useParams();
@@ -329,7 +331,7 @@ const Sidebar: React.FC = () => {
         </div>
 
         {/* Tabs - Only show if aesthetics module is enabled */}
-        {globals.aesthetics_module_enabled && (
+        {aestheticsEnabled && (
           <div className="flex border-b border-gray-200 flex-shrink-0">
             <button
               onClick={() => setActiveTab('clinical')}
@@ -376,10 +378,10 @@ const Sidebar: React.FC = () => {
         </nav>
 
         {/* Footer with selected patient and sign out */}
-        {globals.selected_patient_name ? (
+        {selectedPatientName ? (
           <div className="p-4 border-t border-gray-200 bg-blue-50 flex-shrink-0">
             <p className="text-sm font-medium text-blue-900">Selected Patient:</p>
-            <p className="text-sm text-blue-700 mb-2">{globals.selected_patient_name}</p>
+            <p className="text-sm text-blue-700 mb-2">{selectedPatientName}</p>
             <button
               onClick={handleSignOut}
               className="w-full text-sm text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
