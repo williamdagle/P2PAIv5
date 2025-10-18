@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { supabase } from '../lib/supabase';
 import { auditLogger } from '../utils/auditLogger';
 import Button from '../components/Button';
 import FormField from '../components/FormField';
-import Layout from '../components/Layout';
 
 const getClientInfo = () => ({
   ip_address: null,
@@ -42,17 +42,18 @@ const logAuthEvent = async (eventData: {
   }
 };
 
-interface LoginProps {
-  onNavigate: (page: string) => void;
-}
-
-const Login: React.FC<LoginProps> = ({ onNavigate }) => {
+const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  
+
   const { setGlobal } = useGlobal();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the redirect path from location state (where user tried to go before login)
+  const from = (location.state as any)?.from?.pathname || '/dashboard';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,7 +167,9 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
         setGlobal('user_id', data.user.id);
         setGlobal('clinic_id', profile.clinic_id);
         setGlobal('aesthetics_module_enabled', aestheticsEnabled);
-        onNavigate('Dashboard');
+
+        // Navigate to intended page or dashboard
+        navigate(from, { replace: true });
       } else {
         setErrors({ submit: 'Login failed. No user session created.' });
       }
@@ -184,62 +187,59 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
   };
 
   return (
-    <Layout showSidebar={false}>
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="max-w-md w-full space-y-8 p-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">P2PAI EMR</h2>
-            <p className="text-gray-600">Sign in to your account</p>
-          </div>
-          
-          <form onSubmit={handleLogin} className="mt-8 space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <FormField label="Email" error={errors.email} required>
-                <input
-                  type="email"
-                  autoComplete="username"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your email"
-                />
-              </FormField>
-
-              <FormField label="Password" error={errors.password} required>
-                <input
-                  type="password"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your password"
-                />
-              </FormField>
-
-              {errors.submit && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-red-800 text-sm">{errors.submit}</p>
-                </div>
-              )}
-
-              <Button type="submit" loading={loading} className="w-full">
-                Sign In
-              </Button>
-             
-             <div className="mt-4 text-center">
-               <button
-                 type="button"
-                 onClick={() => onNavigate('UserMigration')}
-                 className="text-sm text-blue-600 hover:text-blue-800 underline"
-               >
-                 Need to migrate users? Click here
-               </button>
-             </div>
-            </div>
-          </form>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="max-w-md w-full space-y-8 p-8">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">P2PAI EMR</h2>
+          <p className="text-gray-600">Sign in to your account</p>
         </div>
+
+        <form onSubmit={handleLogin} className="mt-8 space-y-6">
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <FormField label="Email" error={errors.email} required>
+              <input
+                type="email"
+                autoComplete="username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter your email"
+              />
+            </FormField>
+
+            <FormField label="Password" error={errors.password} required>
+              <input
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter your password"
+              />
+            </FormField>
+
+            {errors.submit && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-red-800 text-sm">{errors.submit}</p>
+              </div>
+            )}
+
+            <Button type="submit" loading={loading} className="w-full">
+              Sign In
+            </Button>
+
+           <div className="mt-4 text-center">
+             <Link
+               to="/user-migration"
+               className="text-sm text-blue-600 hover:text-blue-800 underline"
+             >
+               Need to migrate users? Click here
+             </Link>
+           </div>
+          </div>
+        </form>
       </div>
-    </Layout>
+    </div>
   );
 };
 

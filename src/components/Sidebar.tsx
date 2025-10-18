@@ -1,16 +1,15 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { NavLink, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Users, Calendar, Activity, FlaskConical, Pill, Cable as Capsule, Settings, Home, UserCheck, CalendarDays, FileText, Wrench, ClipboardCheck, CheckSquare, Stethoscope, HeartPulse, ClipboardList, TestTube, Shield, FileDown, FolderOpen, Menu, X, Sparkles, Camera, DollarSign, Package, CreditCard, TrendingUp, ChevronDown, ChevronRight, Building2, UserPlus, File as FileEdit, MapPin } from 'lucide-react';
 import { useGlobal } from '../context/GlobalContext';
 import { supabase } from '../lib/supabase';
 import { auditLogger } from '../utils/auditLogger';
 
-interface SidebarProps {
-  currentPage?: string;
-  onPageChange?: (page: string) => void;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
+const Sidebar: React.FC = () => {
   const { globals, clearGlobals } = useGlobal();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { patientId } = useParams();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'clinical' | 'aesthetics'>('clinical');
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -23,6 +22,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
   });
   const navRef = useRef<HTMLDivElement>(null);
   const scrollPositionRef = useRef<number>(0);
+
+  const selectedPatient = globals.selected_patient_id || patientId;
 
   const handleSignOut = async () => {
     try {
@@ -55,57 +56,56 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
     auditLogger.clearCredentials();
     await supabase.auth.signOut();
     clearGlobals();
-    onPageChange?.('Login');
   };
 
   const clinicalSections = {
     'patient-care': {
       title: 'Patient Care',
       items: [
-        { name: 'Dashboard', icon: Home, page: 'Dashboard' },
-        { name: 'Patients', icon: Users, page: 'Patients' },
-        { name: 'Patient Chart', icon: Stethoscope, page: 'PatientChart', disabled: !globals.selected_patient_id },
-        { name: 'Functional Medicine', icon: HeartPulse, page: 'FunctionalMedicine', disabled: !globals.selected_patient_id },
-        { name: 'Appointments', icon: Calendar, page: 'Appointments', disabled: !globals.selected_patient_id },
-        { name: 'Tasks', icon: CheckSquare, page: 'Tasks' },
-        { name: 'Provider Calendar', icon: CalendarDays, page: 'ProviderCalendar' },
+        { name: 'Dashboard', icon: Home, path: '/dashboard' },
+        { name: 'Patients', icon: Users, path: '/patients' },
+        { name: 'Patient Chart', icon: Stethoscope, path: `/patients/${selectedPatient}/chart`, disabled: !selectedPatient },
+        { name: 'Functional Medicine', icon: HeartPulse, path: `/patients/${selectedPatient}/functional-medicine`, disabled: !selectedPatient },
+        { name: 'Appointments', icon: Calendar, path: `/patients/${selectedPatient}/appointments`, disabled: !selectedPatient },
+        { name: 'Tasks', icon: CheckSquare, path: '/tasks' },
+        { name: 'Provider Calendar', icon: CalendarDays, path: '/calendar' },
       ]
     },
     'charting': {
       title: 'Charting & Orders',
       items: [
-        { name: 'Clinical Notes', icon: FileText, page: 'ClinicalNotes', disabled: !globals.selected_patient_id },
-        { name: 'Clinical Assessments', icon: ClipboardList, page: 'ClinicalAssessments' },
-        { name: 'Treatment Plans', icon: Activity, page: 'TreatmentPlans', disabled: !globals.selected_patient_id },
-        { name: 'Lab Orders', icon: TestTube, page: 'LabOrders' },
-        { name: 'Labs', icon: FlaskConical, page: 'Labs', disabled: !globals.selected_patient_id },
-        { name: 'Medications', icon: Pill, page: 'Medications', disabled: !globals.selected_patient_id },
-        { name: 'Supplements', icon: Capsule, page: 'Supplements', disabled: !globals.selected_patient_id },
+        { name: 'Clinical Notes', icon: FileText, path: `/patients/${selectedPatient}/clinical-notes`, disabled: !selectedPatient },
+        { name: 'Clinical Assessments', icon: ClipboardList, path: '/clinical-assessments' },
+        { name: 'Treatment Plans', icon: Activity, path: `/patients/${selectedPatient}/treatment-plans`, disabled: !selectedPatient },
+        { name: 'Lab Orders', icon: TestTube, path: '/lab-orders' },
+        { name: 'Labs', icon: FlaskConical, path: `/patients/${selectedPatient}/labs`, disabled: !selectedPatient },
+        { name: 'Medications', icon: Pill, path: `/patients/${selectedPatient}/medications`, disabled: !selectedPatient },
+        { name: 'Supplements', icon: Capsule, path: `/patients/${selectedPatient}/supplements`, disabled: !selectedPatient },
       ]
     },
     'group-intake': {
       title: 'Groups & Intake',
       items: [
-        { name: 'Patient Groups', icon: UserPlus, page: 'PatientGroupsManagement' },
-        { name: 'Form Builder', icon: FileEdit, page: 'FormBuilder' },
-        { name: 'Intake Management', icon: ClipboardList, page: 'IntakeManagement' },
-        { name: 'State Configuration', icon: MapPin, page: 'StateConfiguration' },
+        { name: 'Patient Groups', icon: UserPlus, path: '/admin/patient-groups' },
+        { name: 'Form Builder', icon: FileEdit, path: '/admin/form-builder' },
+        { name: 'Intake Management', icon: ClipboardList, path: '/admin/intake' },
+        { name: 'State Configuration', icon: MapPin, path: '/admin/state-configuration' },
       ]
     },
     'administration': {
       title: 'Administration',
       items: [
-        { name: 'Admin', icon: Settings, page: 'Admin' },
-        { name: 'System Settings', icon: Settings, page: 'SystemSettings' },
-        { name: 'Clinic Settings', icon: Building2, page: 'ClinicSettings' },
-        { name: 'Compliance Reporting', icon: ClipboardCheck, page: 'ComplianceReporting' },
-        { name: 'Manage Templates', icon: Wrench, page: 'ManageTemplates' },
-        { name: 'Manage Appointment Types', icon: CalendarDays, page: 'ManageAppointmentTypes' },
-        { name: 'Provider Schedules', icon: CalendarDays, page: 'ProviderScheduleManagement' },
-        { name: 'Document Management', icon: FolderOpen, page: 'DocumentManagement' },
-        { name: 'Patient Portal', icon: Shield, page: 'PatientPortal' },
-        { name: 'Chart Export', icon: FileDown, page: 'ChartExport' },
-        { name: 'User Migration', icon: UserCheck, page: 'UserMigration' },
+        { name: 'Admin', icon: Settings, path: '/admin' },
+        { name: 'System Settings', icon: Settings, path: '/admin/system-settings' },
+        { name: 'Clinic Settings', icon: Building2, path: '/admin/clinic-settings' },
+        { name: 'Compliance Reporting', icon: ClipboardCheck, path: '/admin/compliance' },
+        { name: 'Manage Templates', icon: Wrench, path: '/admin/templates' },
+        { name: 'Manage Appointment Types', icon: CalendarDays, path: '/admin/appointment-types' },
+        { name: 'Provider Schedules', icon: CalendarDays, path: '/admin/provider-schedules' },
+        { name: 'Document Management', icon: FolderOpen, path: '/admin/documents' },
+        { name: 'Patient Portal', icon: Shield, path: '/admin/patient-portal' },
+        { name: 'Chart Export', icon: FileDown, path: '/admin/chart-export' },
+        { name: 'User Migration', icon: UserCheck, path: '/user-migration' },
       ]
     }
   };
@@ -114,31 +114,28 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
     'aesthetics-core': {
       title: 'Patient Services',
       items: [
-        { name: 'Aesthetics Dashboard', icon: Sparkles, page: 'AestheticsDashboard' },
-        { name: 'Aesthetic Treatments', icon: Sparkles, page: 'AestheticTreatments', disabled: !globals.selected_patient_id },
-        { name: 'Photos & Analysis', icon: Camera, page: 'AestheticPhotos', disabled: !globals.selected_patient_id },
+        { name: 'Aesthetics Dashboard', icon: Sparkles, path: '/aesthetics/dashboard' },
+        { name: 'Aesthetic Treatments', icon: Sparkles, path: `/aesthetics/patients/${selectedPatient}/treatments`, disabled: !selectedPatient },
+        { name: 'Photos & Analysis', icon: Camera, path: `/aesthetics/patients/${selectedPatient}/photos`, disabled: !selectedPatient },
       ]
     },
     'aesthetics-business': {
       title: 'Business Management',
       items: [
-        { name: 'POS & Billing', icon: DollarSign, page: 'AestheticPOS' },
-        { name: 'Inventory', icon: Package, page: 'AestheticInventory' },
-        { name: 'Memberships', icon: TrendingUp, page: 'AestheticMemberships' },
-        { name: 'Gift Cards', icon: CreditCard, page: 'AestheticGiftCards' },
+        { name: 'POS & Billing', icon: DollarSign, path: '/aesthetics/pos' },
+        { name: 'Inventory', icon: Package, path: '/aesthetics/inventory' },
+        { name: 'Memberships', icon: TrendingUp, path: '/aesthetics/memberships' },
+        { name: 'Gift Cards', icon: CreditCard, path: '/aesthetics/gift-cards' },
       ]
     }
   };
 
-  const handleMenuItemClick = useCallback((page: string, isDisabled: boolean) => {
-    if (!isDisabled) {
-      if (navRef.current) {
-        scrollPositionRef.current = navRef.current.scrollTop;
-      }
-      onPageChange?.(page);
-      setIsMobileMenuOpen(false);
+  const handleMenuItemClick = useCallback(() => {
+    if (navRef.current) {
+      scrollPositionRef.current = navRef.current.scrollTop;
     }
-  }, [onPageChange]);
+    setIsMobileMenuOpen(false);
+  }, []);
 
   const toggleSection = useCallback((sectionId: string) => {
     setExpandedSections(prev => {
@@ -153,47 +150,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
 
   // Auto-switch to aesthetics tab if on an aesthetics page
   useEffect(() => {
-    const aestheticsPages = ['AestheticsDashboard', 'AestheticTreatments', 'AestheticPhotos', 'AestheticPOS', 'AestheticInventory', 'AestheticMemberships', 'AestheticGiftCards'];
-    if (currentPage && aestheticsPages.includes(currentPage)) {
+    if (location.pathname.startsWith('/aesthetics')) {
       setActiveTab('aesthetics');
+    } else {
+      setActiveTab('clinical');
     }
-  }, [currentPage]);
+  }, [location.pathname]);
 
-  // Auto-expand the section containing the current page (without causing re-renders)
-  useEffect(() => {
-    if (!currentPage) return;
-
-    const allSections = activeTab === 'clinical' ? clinicalSections : aestheticsSections;
-
-    for (const [sectionId, section] of Object.entries(allSections)) {
-      const containsCurrentPage = section.items.some((item: any) => item.page === currentPage);
-      if (containsCurrentPage) {
-        setExpandedSections(prev => {
-          const newState = {
-            ...prev,
-            [sectionId]: true
-          };
-          sessionStorage.setItem('sidebar-expanded-sections', JSON.stringify(newState));
-          return newState;
-        });
-        break;
-      }
-    }
-  }, [currentPage, activeTab]);
-
-  // Persist tab selection in sessionStorage
-  useEffect(() => {
-    const savedTab = sessionStorage.getItem('sidebar-active-tab');
-    if (savedTab === 'clinical' || savedTab === 'aesthetics') {
-      setActiveTab(savedTab);
-    }
-  }, []);
-
-  useEffect(() => {
-    sessionStorage.setItem('sidebar-active-tab', activeTab);
-  }, [activeTab]);
-
-  // Load expanded sections and scroll position from sessionStorage on mount
+  // Load expanded sections from sessionStorage
   useEffect(() => {
     const savedSections = sessionStorage.getItem('sidebar-expanded-sections');
     if (savedSections) {
@@ -254,36 +218,45 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
     }
   }, [isMobileMenuOpen]);
 
+  useEffect(() => {
+    sessionStorage.setItem('sidebar-active-tab', activeTab);
+  }, [activeTab]);
+
   const renderMenuItem = (item: any) => {
     const Icon = item.icon;
-    const isActive = currentPage === item.page;
     const isDisabled = item.disabled;
     const isAestheticsTab = activeTab === 'aesthetics';
 
+    if (isDisabled) {
+      return (
+        <div
+          key={item.name}
+          className="w-full flex items-center px-6 py-2.5 text-left text-sm text-gray-400 cursor-not-allowed"
+        >
+          <Icon className="w-4 h-4 mr-3 flex-shrink-0" aria-hidden="true" />
+          <span className="font-medium">{item.name}</span>
+        </div>
+      );
+    }
+
     return (
-      <button
+      <NavLink
         key={item.name}
-        onClick={() => handleMenuItemClick(item.page, !!isDisabled)}
-        disabled={isDisabled}
-        role="menuitem"
-        aria-label={`Navigate to ${item.name}`}
-        aria-current={isActive ? 'page' : undefined}
-        aria-disabled={isDisabled}
-        className={`
+        to={item.path}
+        onClick={handleMenuItemClick}
+        className={({ isActive }) => `
           w-full flex items-center px-6 py-2.5 text-left transition-colors text-sm
           ${isActive
             ? isAestheticsTab
               ? 'bg-pink-50 border-r-4 border-pink-600 text-pink-700'
               : 'bg-blue-50 border-r-4 border-blue-600 text-blue-700'
-            : isDisabled
-            ? 'text-gray-400 cursor-not-allowed'
             : 'text-gray-700 hover:bg-gray-50 focus:bg-gray-100 focus:outline-none'
           }
         `}
       >
         <Icon className="w-4 h-4 mr-3 flex-shrink-0" aria-hidden="true" />
         <span className="font-medium">{item.name}</span>
-      </button>
+      </NavLink>
     );
   };
 
@@ -347,7 +320,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
         {/* Header */}
         <div className="p-6 border-b border-gray-200 relative flex items-center justify-center">
           <img src="/p2plogov6.png" alt="P2PAI Logo" className="h-8 w-auto" />
-          
+
           <button
             onClick={() => setIsMobileMenuOpen(false)}
             className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 lg:hidden"
@@ -356,7 +329,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
             <X className="w-6 h-6" />
           </button>
         </div>
-
 
         {/* Tabs - Only show if aesthetics module is enabled */}
         {globals.aesthetics_module_enabled && (
