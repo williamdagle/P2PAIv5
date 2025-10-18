@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
+import { buildRoute } from '../utils/routeMapping';
 import Button from '../components/Button';
 import FormField from '../components/FormField';
 import { ArrowLeft, CreditCard as Edit3, Save } from 'lucide-react';
@@ -13,6 +14,10 @@ const CreateQuickNote: React.FC = () => {
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
   const [loading, setLoading] = useState(false);
+
+  const onNavigate = (page: string) => {
+    navigate(buildRoute(page, globals.selected_patient_id));
+  };
   const [categories, setCategories] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     title: '',

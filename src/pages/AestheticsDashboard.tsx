@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
+import { buildRoute } from '../utils/routeMapping';
 import Button from '../components/Button';
 import {
   Sparkles,
@@ -21,6 +22,10 @@ const AestheticsDashboard: React.FC = () => {
   const { globals } = useGlobal();
   const { showError } = useNotification();
   const { apiCall } = useApi();
+
+  const onNavigate = (page: string) => {
+    navigate(buildRoute(page, globals.selected_patient_id));
+  };
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     todayAppointments: 0,

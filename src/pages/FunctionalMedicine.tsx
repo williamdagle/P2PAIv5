@@ -156,7 +156,7 @@ const FunctionalMedicine: React.FC = () => {
                     patientId={globals.selected_patient_id!}
                     patientName={globals.selected_patient_name || 'Patient'}
                     showFMFields={true}
-                    onNavigate={onNavigate}
+                    onNavigate={navigate}
                   />
                 )}
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { useNotification } from '../hooks/useNotification';
 import { useApi } from '../hooks/useApi';
+import { buildRoute } from '../utils/routeMapping';
 import Button from '../components/Button';
 import FormField from '../components/FormField';
 import { ArrowLeft, Stethoscope, Save, FileText } from 'lucide-react';
@@ -26,6 +27,10 @@ const CreateProviderNote: React.FC = () => {
   const { globals } = useGlobal();
   const { showSuccess, showError } = useNotification();
   const { apiCall } = useApi();
+
+  const onNavigate = (page: string) => {
+    navigate(buildRoute(page, globals.selected_patient_id));
+  };
   const [loading, setLoading] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
@@ -129,7 +134,7 @@ const CreateProviderNote: React.FC = () => {
       );
 
       showSuccess('Provider note created successfully');
-      onNavigate('ClinicalNotes');
+      navigate(buildRoute('ClinicalNotes', globals.selected_patient_id));
     } catch (err) {
       showError('Failed to create provider note', 'Please try again.');
     } finally {

@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
+import { buildRoute } from '../utils/routeMapping';
 import Layout from '../components/Layout';
 import Button from '../components/Button';
 import { Users, AlertTriangle, CheckCircle, XCircle, Key } from 'lucide-react';
-
-interface UserMigrationProps {
-  onNavigate: (page: string) => void;
-}
 
 interface MigrationResult {
   user_id: string;
@@ -17,7 +15,12 @@ interface MigrationResult {
   error?: string;
 }
 
-const UserMigration: React.FC<UserMigrationProps> = ({ onNavigate }) => {
+const UserMigration: React.FC = () => {
+  const navigate = useNavigate();
+
+  const onNavigate = (page: string) => {
+    navigate(buildRoute(page));
+  };
   const [migrationResults, setMigrationResults] = useState<MigrationResult[]>([]);
   const [migrationStats, setMigrationStats] = useState<{
     total: number;
